@@ -1,0 +1,117 @@
+const express = require('express');
+const router = express.Router();
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const passport = require('passport');
+
+
+// Bring in Models
+const User = require('../models/User');
+
+
+const key = process.env.JWT_SECRET;
+
+router.post('/login', (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+
+  User.findOne({ email }).then(user => {
+    if (!user) {
+      return res
+        .status(422)
+        .send({ error: 'No user found for this email address.' });
+    }
+    bcrypt.compare(password, user.password).then(isMatch => {
+      if (isMatch) {
+        const payload = { id: user.id };
+        jwt.sign(payload, key, { expiresIn: 3600 }, (err, token) => {
+          res.status(200).json({
+            success: true,
+            token: `Bearer ${token}`,
+            user: {
+              id: user.id,
+              firstName: user.profile.firstName,
+              lastName: user.profile.lastName,
+              email: user.email
+            }
+          });
+        });
+      } else {
+        res.status(404).json({
+          success: false,
+          error: 'Password is incorrect'
+        });
+      }
+    });
+  });
+});
+
+router.post('/register', (req, res, next) => {
+  const email = req.body.email;
+  const firstName = req.body.firstName;
+  const lastName = req.body.lastName;
+  const password = req.body.password;
+
+  if (!email) {
+    return res.status(422).json({ error: 'You must enter an email address.' });
+  }
+
+  if (!firstName || !lastName) {
+    return res.status(422).json({ error: 'You must enter your full name.' });
+  }
+
+  if (!password) {
+    return res.status(422).json({ error: 'You must enter a password.' });
+  }
+
+  User.findOne({ email }, (err, existingUser) => {
+    if (err) {
+      return next(err);
+    }
+
+    if (existingUser) {
+      return res
+        .status(422)
+        .json({ error: 'This email address is already in use.' });
+    }
+
+    const user = new User({
+      email,
+      password,
+      profile: { firstName, lastName }
+    });
+
+    bcrypt.genSalt(10, (err, salt) => {
+      bcrypt.hash(user.password, salt, (err, hash) => {
+        if (err) {
+          console.log(err);
+        }
+        user.password = hash;
+
+        user.save((err, user) => {
+          if (err) {
+            return next(err);
+          }
+
+          const payload = { id: user.id };
+
+          jwt.sign(payload, key, { expiresIn: 3600 }, (err, token) => {
+            res.status(200).json({
+              success: true,
+              token: `Bearer ${token}`,
+              user: {
+                id: user.id,
+                firstName: user.profile.firstName,
+                lastName: user.profile.lastName,
+                email: user.email
+              }
+            });
+          });
+        });
+      });
+    });
+  });
+});
+
+
+module.exports = router;
