@@ -9,11 +9,13 @@ const path = require('path');
 const passport = require('passport');
 const session = require('express-session');
 
-const routes = require('./routes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 const mongoURI = process.env.MONGO_URI;
+
+//Router
+const routes = require('./routes');
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -32,6 +34,7 @@ mongoose
   require('./config/passport')(passport);
   
   app.use('/api', routes);
+  app.use('/api', (req, res) => res.status(404).json('No API route found'));
   
 // if development
 if (process.env.NODE_ENV !== 'production') {
@@ -40,13 +43,8 @@ if (process.env.NODE_ENV !== 'production') {
       verbose: false
     })
   );
-  // app.use(express.static(path.resolve(__dirname, '../dist')));
 } else {
   app.use(compression());
-  // app.use(express.static(path.resolve(__dirname, '../dist')));
-  // app.get('*', (req, res) => {
-  //   res.sendFile(path.resolve(__dirname, '../dist/index.html'));
-  // });
 }
 
 app.listen(PORT, () => {

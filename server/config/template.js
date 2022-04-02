@@ -24,8 +24,23 @@ function resetEmail(req,username,resetToken){
   
     return message;
   };
+  
+  function signupEmail(profile){
+    const message = {
+      subject: 'Account Registration',
+      text:
+        `Hi ${profile.firstName} ${
+          profile.lastName
+        }!Your account has been signed up sucessfully!\n` + 
+        `Thank you for joining with us!. \n\n` +
+        `If you did not request this, please contact us immediately.`
+    };
+  
+    return message;
+  }
 
   module.exports = {
       resetEmail,
-      confirmResetPasswordEmail
+      confirmResetPasswordEmail,
+      signupEmail
   }

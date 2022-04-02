@@ -12,7 +12,7 @@ const mailgun = require('mailgun-js')({
     };
   
     mailgun.messages().send(data, (error, body) => {
-      console.log(body);
+      //console.log(body);
     });
   };
   
@@ -25,7 +25,7 @@ const mailgun = require('mailgun-js')({
     };
   
     mailgun.messages().send(data, (error, body) => {
-      console.log(body);
+      //console.log(body);
     });
   };
 
