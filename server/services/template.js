@@ -1,13 +1,13 @@
 
-function resetEmail(req,username,resetToken){
+function resetEmail(host, user){
     const message = {
       subject: 'Reset Password',
       text:
-        `Hi ${username},\n\n`+
+        `Hi ${user.firstName},\n\n`+
           `${'Forgot your password?\n'+
           'We receive a request to reset your password for your account.\n\n' +
           'To reset your password click on the following link, or paste this into your browser:\n' +
-          'http://'}${req.headers.host}/api/reset/${resetToken}\n\n` +
+          'http://'}${host}/api/auth/reset/${user.resetPasswordToken}\n\n` +
         `If you did not make this request then please ignore this email.\n`
     };
   
@@ -25,13 +25,12 @@ function resetEmail(req,username,resetToken){
     return message;
   };
   
-  function signupEmail(profile){
+  function signupEmail(name){
     const message = {
       subject: 'Account Registration',
       text:
-        `Hi ${profile.firstName} ${
-          profile.lastName
-        }!Your account has been signed up sucessfully!\n` + 
+        `Hi ${name.firstName}!\n`+ 
+        `Your account has been signed up sucessfully!\n` + 
         `Thank you for joining with us!. \n\n` +
         `If you did not request this, please contact us immediately.`
     };
