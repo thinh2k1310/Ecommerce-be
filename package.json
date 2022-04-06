@@ -18,7 +18,9 @@
   ],
   "dependencies": {
     "axios": "^0.26.1",
+    "bcrypt": "^5.0.1",
     "bcryptjs": "^2.4.3",
+    "body-parser": "^1.20.0",
     "compression": "^1.7.4",
     "connect-history-api-fallback": "^1.6.0",
     "cors": "^2.8.5",
@@ -28,17 +30,20 @@
     "helmet": "^5.0.2",
     "jsonwebtoken": "^8.5.1",
     "mailgun-js": "^0.22.0",
-    "mongoose": "^6.2.8",
+    "mongodb": "^4.5.0",
+    "mongoose": "^6.2.10",
     "passport": "^0.5.2",
     "passport-facebook": "^3.0.0",
     "passport-google-oauth2": "^0.2.0",
-    "passport-jwt": "^4.0.0"
+    "passport-jwt": "^4.0.0",
+    "session-storage": "^1.0.1"
   },
   "devDependencies": {
     "chalk": "^2.4.2",
     "copy-webpack-plugin": "^10.2.4",
     "cross-env": "^7.0.3",
     "dotenv-webpack": "^7.1.0",
+    "morgan": "^1.10.0",
     "nodemon": "^2.0.15",
     "webpack": "^5.70.0",
     "webpack-cli": "^4.9.2",

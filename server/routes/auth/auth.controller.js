@@ -51,9 +51,8 @@ async function login(req, res) {
     const token = jwt.sign(payload, secret, { expiresIn: tokenLife });
 
     if (!token) {
-      throw new Error();
+      throw new Error('failed to generate login access token');
     }
-
     res.status(200).json({
       success: true,
       token: `Bearer ${token}`,
@@ -62,7 +61,7 @@ async function login(req, res) {
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
-        role: user.role
+        role: user.role,
       }
     });
   } catch (error) {
@@ -104,7 +103,6 @@ async function register(req, res) {
         firstName,
         lastName
       });
-
       const salt = await bcrypt.genSalt(10);
       const hash = await bcrypt.hash(user.password, salt);
 
@@ -137,7 +135,7 @@ async function register(req, res) {
       });
     } catch (error) {
       res.status(400).json({
-        error: 'Your request could not be processed. Please try again.'
+        error: 'Your request could not be processed. Please try again.\n' + error
       });
     }
   }

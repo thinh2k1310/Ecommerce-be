@@ -9,8 +9,8 @@ const connectDatabase = async () => {
             useNewUrlParser: true,
             useUnifiedTopology: true,
         });  
-        await User.deleteMany();
-        await User.insertMany(data.users);
+        // await User.deleteMany();
+        // await User.insertMany(data.users);
         
         console.log("Connected to the database")
     } catch (error) {
@@ -31,7 +31,12 @@ const data = {
             email: 'merchant@gmail.com',
             password : bcrypt.hashSync('123456', 8),
             role : 'ROLE_MERCHANT',
+        },
+        {
+            email: 'thinh2k1310@gmail.com',
+            password : bcrypt.hashSync('123456', 8),
+            role : 'ROLE_MEMBER',
         }
-    ],
+    ]
 }
 module.exports = connectDatabase;

@@ -31,6 +31,7 @@ app.use(
 // Connect to MongoDB
 dbConnection()
 
+
 require('./config/passport')(app);
 app.use(apiURl,routes);
   
@@ -44,6 +45,7 @@ if (process.env.NODE_ENV !== 'production') {
 } else {
   app.use(compression());
 }
+
 
 app.listen(port, () => {
   console.log(
