@@ -1,6 +1,5 @@
 require('dotenv').config();
 const express = require('express');
-const chalk = require('chalk');
 const historyApiFallback = require('connect-history-api-fallback');
 const compression = require('compression');
 const cors = require('cors');
@@ -49,8 +48,6 @@ if (process.env.NODE_ENV !== 'production') {
 
 app.listen(port, () => {
   console.log(
-    `${chalk.green('✓')} ${chalk.blue(
       `Listening on port ${port}. Visit http://localhost:${port}/ in your browser.`
-    )}`
   );
 });

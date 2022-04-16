@@ -4,7 +4,7 @@
   "description": "Build Ecommerce Application",
   "main": "server/index.js",
   "scripts": {
-    "build": "npm run build:clean && cross-env NODE_ENV=production webpack --progress --colors",
+    "build": "npm run build:clean && cross-env NODE_ENV=production",
     "build:clean": "rimraf ./dist",
     "start": "cross-env NODE_ENV=development nodemon server",
     "start:prod": "cross-env NODE_ENV=production node server",
