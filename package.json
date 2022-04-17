@@ -32,6 +32,7 @@
     "mailgun-js": "^0.22.0",
     "mongodb": "^4.5.0",
     "mongoose": "^6.2.10",
+    "mongoose-slug-generator": "^1.0.4",
     "passport": "^0.5.2",
     "passport-facebook": "^3.0.0",
     "passport-google-oauth2": "^0.2.0",
