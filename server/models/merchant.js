@@ -13,9 +13,9 @@ const MerchantSchema = new Schema({
   phoneNumber: {
     type: String
   },
-  category: {
-    type: String
-  },
+  categories : [{
+    type : Mongoose.Types.ObjectId 
+  }],
   business: {
     type: String,
     trim: true

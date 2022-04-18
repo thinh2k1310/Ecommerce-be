@@ -9,6 +9,13 @@ const merchantRouter = express.Router();
 
 merchantRouter.get('/', auth, role.checkRole(role.ROLES.Admin), merchantController.getAllMerchants);
 
+merchantRouter.post('/seller-request', merchantController.requestNewMerchantApproval);
+
+merchantRouter.put('/approve/:merchantId', auth,  merchantController.approveMerchantApplication);
+
+merchantRouter.put('/reject/:merchantId', auth,  merchantController.rejectMerchantApplication);
+
+
 merchantRouter.post('/add', auth, role.checkRole(role.ROLES.Admin), merchantController.createMerchant);
 
 merchantRouter.get('/:id', auth, role.checkRole(role.ROLES.Admin), merchantController.getMerchantById);

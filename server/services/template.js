@@ -38,8 +38,17 @@ function resetEmail(host, user){
     return message;
   }
 
+  function merchantApplicationEmail(name){
+    const message = {
+      subject: 'Sell on MERN Store',
+      text: `We received your request! Our team will contact you soon. \n\n`
+    };
+
+    return message;
+  }
   module.exports = {
       resetEmail,
       confirmResetPasswordEmail,
-      signupEmail
+      signupEmail,
+      merchantApplicationEmail
   }
