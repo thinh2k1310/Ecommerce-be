@@ -3,6 +3,7 @@ const express = require('express');
 const historyApiFallback = require('connect-history-api-fallback');
 const compression = require('compression');
 const cors = require('cors');
+const bcrypt = require('bcryptjs')
 const helmet = require('helmet');
 const passport = require('passport');
 const session = require('express-session');

@@ -1,5 +1,7 @@
 const mongoose = require ('mongoose');
-const User = require('../models/user');
+const bcrypt = require('bcryptjs');
+const fs = require('fs');
+
 
 const connectDatabase = async () => {
     try {
@@ -7,6 +9,8 @@ const connectDatabase = async () => {
             useNewUrlParser: true,
             useUnifiedTopology: true,
         });  
+
+
         console.log("Connected to the database")
     } catch (error) {
         console.log(`Could not connect to the database with error : ${error}`);
