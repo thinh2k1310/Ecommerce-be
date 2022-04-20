@@ -8,11 +8,13 @@ const userRouter = require('./user/user.route');
 const addressRouter = require('./address/address.route');
 const categoryRouter = require('./category/category.route');
 const subcategoryRouter = require('./subcategory/subcategory.route');
+const merchantRouter = require('./merchant/merchant.route');
 
 router.use('/auth',authRouter);
 router.use('/user',userRouter);
 router.use('/address',addressRouter);
 router.use('/category', categoryRouter);
 router.use('/subcategory', subcategoryRouter);
+router.use('/merchant',merchantRouter);
 
 module.exports = router;

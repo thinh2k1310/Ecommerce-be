@@ -31,6 +31,7 @@ async function sendEmail(email, type, host, data) {
       text: message.text
     };
     return await mailgun.messages().send(config,(error,body) => {
+      console.log("send mail: ");
       console.log(body);
     });
     
@@ -55,6 +56,18 @@ const prepareTemplate = (type, host, data) => {
       message = template.signupEmail(data);
       break;
 
+    case 'merchant-application':
+        message = template.merchantApplicationEmail();
+        break;
+
+    case 'merchant-signup':
+          message = template.merchantSignup(host, data);
+          break;
+    
+    case 'merchant-welcome':
+          message = template.merchantWelcome(data);
+          break;
+        
     default:
       message = '';
   }

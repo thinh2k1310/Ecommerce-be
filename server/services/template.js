@@ -38,8 +38,43 @@ function resetEmail(host, user){
     return message;
   }
 
+  function merchantApplicationEmail(name){
+    const message = {
+      subject: 'Sell on MERN Store',
+      text: `We received your request! Our team will contact you soon. \n\n`
+    };
+
+    return message;
+  }
+
+  function merchantSignup(host,resetToken){
+    const message = {
+      subject: 'Merchant Registration',
+      text: `${
+        'Congratulations! Your application has been accepted. Please change your password for your account by clicking on the link below. \n\n' +
+        'Please click on the following link, or paste this into your browser to complete the process:\n\n' +
+        'http://'
+      }${host}/api/auth/reset/${resetToken}\n\n`
+    };
+  
+    return message;
+  };
+  
+  function merchantWelcome(name) {
+    const message = {
+      subject: 'Merchant Registration',
+      text:
+        `Hi ${name}! Congratulations! Your application for merchant account has been accepted. \n\n` +
+        `It looks like you already have a member account with us. Please sign in with your member credentials and you will be able to see your merchant account.`
+    };
+  
+    return message;
+  };
   module.exports = {
       resetEmail,
       confirmResetPasswordEmail,
-      signupEmail
+      signupEmail,
+      merchantApplicationEmail,
+      merchantSignup,
+      merchantWelcome
   }
