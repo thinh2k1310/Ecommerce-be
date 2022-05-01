@@ -2,7 +2,7 @@
 // Bring in Models & Helpers
 const Category = require('../../models/category');
 const Subcategory =  require('../../models/subcategory');
-const Product = require('../../models/product');
+//const Product = require('../../models/product');
 
 
 // Create category
@@ -35,19 +35,6 @@ function createCategory(req, res) {
       });
     });
   }
-// Get all category
-async function getAllCategory(req, res){
-  try {
-    const categories = await Category.find({});
-    res.status(200).json({
-      categories
-    });
-  } catch (error) {
-    res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
-    });
-  }
-}
 
 // Update category
 async function updateCategory(req, res){
@@ -70,15 +57,13 @@ async function updateCategory(req, res){
     });
   }
 }
-// Delete category
-async function deleteCategory(req, res){
-  try {
-    const product = await Category.deleteOne({ _id: req.params.id });
 
+// Get all category
+async function getAllCategories(req, res){
+  try {
+    const categories = await Category.find({});
     res.status(200).json({
-      success: true,
-      message: `Category has been deleted successfully!`,
-      product
+      categories
     });
   } catch (error) {
     res.status(400).json({
@@ -86,14 +71,48 @@ async function deleteCategory(req, res){
     });
   }
 }
+//Get all categories and subcategories
+async function getCategories(req,res) {
+  try{
+  const categories = await  Category.find({});
+  const data = [];
+  var getData = new Promise((resolve,reject) => {
+    categories.forEach(async (category, index, array) => {
+      const subcategories = await Subcategory.find({category : category._id});
+      data.push({
+        category_id: category._id,
+        category_name: category.name,
+        subcategories : subcategories
+      });
+      if (index === array.length -1) resolve();
 
-async function getSubcategories(req, res){
-  try {
-    const subcategories = await Subcategory.find({category : req.params.id});
-    res.status(200).json({
-      subcategories
-    });
-  } catch (error) {
+      // data.menu.categories.forEach(_category => {
+      //     _category.items = items.filter(item => item.cat_id === _category.id_category)
+      //         .map(item => ({
+      //             id_item: item.id_item,
+      //             title: item.title,
+      //         }));
+
+      //     _category.subcategories = categories.filter(__category => __category.parent_id === _category.id);
+
+      //     _category.subcategories.forEach(subcategory => {
+      //         subcategory.items = items.filter(item => item.cat_id === subcategory.id_category)
+      //             .map(item => ({
+      //                 id_item: item.id_item,
+      //                 title: item.title,
+      //             }));
+
+      //     });
+      // });
+  });
+});
+getData.then(() => {
+  res.status(200).json({
+    categories : data
+  });
+});
+}catch(error) {
+    console.log(error);
     res.status(400).json({
       error: 'Your request could not be processed. Please try again.'
     });
@@ -102,8 +121,7 @@ async function getSubcategories(req, res){
 
 module.exports = {
     createCategory,
-    getAllCategory,
     updateCategory,
-    deleteCategory,
-    getSubcategories
+    getCategories,
+    getAllCategories,
 };

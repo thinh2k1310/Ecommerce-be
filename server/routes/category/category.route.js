@@ -10,13 +10,10 @@ const categoryRouter = express.Router();
 
 categoryRouter.post('/add', auth, role.checkRole(role.ROLES.Admin), categoryController.createCategory);
 
-categoryRouter.get('/', categoryController.getAllCategory);
+categoryRouter.get('/list', categoryController.getCategories);
+
 
 categoryRouter.put('/:id', auth, role.checkRole(role.ROLES.Admin), categoryController.updateCategory);
-
-categoryRouter.delete('/:id', auth, role.checkRole(role.ROLES.Admin), categoryController.deleteCategory);
-
-categoryRouter.get('/:id/subcategory', categoryController.getSubcategories);
 
 
 

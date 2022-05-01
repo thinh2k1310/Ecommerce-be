@@ -14,6 +14,12 @@ function createSubcategory(req, res) {
         .status(400)
         .json({ error: 'You must enter name & description.' });
     }
+
+    if (!category ) {
+      return res
+        .status(400)
+        .json({ error: 'You must choose category.' });
+    }
   
     const subcategory = new Subcategory({
       name,
@@ -77,7 +83,7 @@ async function getOneSubcategoryById(req, res){
 async function updateSubcategory(req, res){
   try {
     const subcategoryId = req.params.id;
-    const update = req.body.subcategory;
+    const update = req.body;
     const query = { _id: subcategoryId };
 
     await Subcategory.findOneAndUpdate(query, update, {

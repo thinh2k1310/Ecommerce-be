@@ -22,6 +22,11 @@ const UserSchema = new Schema({
   password: {
     type: String
   },
+  merchant: {
+    type: Schema.Types.ObjectId,
+    ref: 'Merchant',
+    default: null
+  },
   provider: {
     type: String,
     required: true,

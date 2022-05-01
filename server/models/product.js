@@ -42,17 +42,22 @@ const ProductSchema = new Schema({
     type: Boolean,
     default: true
   },
+  merchant : {
+    type : Schema.Types.ObjectId,
+    ref: 'Merchant',
+    required: true
+  },
   category: {
     type: Schema.Types.ObjectId,
     ref: 'Category',
     default: null,
     required: true
   },
-  subCategory: {
+  subcategory: {
     type: Schema.Types.ObjectId,
     ref: 'Subcategory',
     default: null,
-    required: false
+    required: true
   },
   updated: Date,
   created: {

@@ -135,7 +135,7 @@ async function register(req, res) {
       });
     } catch (error) {
       res.status(400).json({
-        error: 'Your request could not be processed. Please try again.\n' + error
+        error: 'Your request could not be processed. Please try again.' 
       });
     }
   }
