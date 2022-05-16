@@ -22,6 +22,10 @@ module.exports = {
       name : process.env.CLOUD_NAME,
       key:  process.env.CLOUDINARY_API_KEY,
       secret: process.env.CLOUDINARY_SECRET_KEY,
+    },
+    paypal : {
+      clientId: process.env.PAYPAL_CLIENT_ID,
+      secret : process.env.PAYPAL_SECRET
     }
   };
   

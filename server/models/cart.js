@@ -35,6 +35,14 @@ const CartSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'Merchant'
   },
+  total : {
+    type : Number,
+    default : 0
+  },
+  isOrdered : {
+    type : Boolean,
+    default : false
+  },
   updated: Date,
   created: {
     type: Date,

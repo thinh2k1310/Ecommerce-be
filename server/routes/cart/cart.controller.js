@@ -7,7 +7,8 @@ async function getAllMyCarts(req, res) {
   try {
     const carts = await Cart.find(
       {
-        user: req.user
+        user: req.user,
+        isOrdered :  false
       }
     );
 
@@ -25,7 +26,7 @@ async function getAllMyCarts(req, res) {
 async function addProductToCart(req, res) {
   try {
     const products = req.body.products;
-    const product = await Product.findById(products[0].product._id);
+    const product = await Product.findById(products[0].product);
     
     
     if (product.quantity < products[0].quantity){
@@ -38,7 +39,8 @@ async function addProductToCart(req, res) {
       {
         $and: [
           { user: req.user._id },
-          { merchant: products[0].merchant }
+          { merchant: products[0].merchant },
+          { isOrdered :  false}
         ]
       }
     );
@@ -48,27 +50,32 @@ async function addProductToCart(req, res) {
       
       let existProduct = -1;
       cart.products.forEach((item, index) => {
-        if ((item.product._id.toString()) == (firstProduct.product._id)) {
+        if ((item.product._id.toString()) == (firstProduct.product)) {
           existProduct = index;
         }
       });
       if (existProduct != -1) {
-        decreaseInventory([firstProduct]);
+        decreaseInventory([firstProduct],null);
         firstProduct.quantity += cart.products[existProduct].quantity
         const updatedProducts = store.caculateItemsPrice([firstProduct]);
-        const query = { _id: cart._id };
+        const query = { _id: cart._id };                          
         await Cart.updateOne(query, { $pull: { products: cart.products[existProduct] } }).exec();
         await Cart.updateOne(query, { $push: { products: updatedProducts } }).exec();
+        const cartt = await Cart.findOne(query);
+        const total = store.caculateCartTotal(cartt.products);
+        await Cart.updateOne(query,{ $set: { total: total }});
         res.status(200).json({
           success: true
         });
       }
       else {
         const products = store.caculateItemsPrice(items);
+        const total = store.caculateCartTotal(items);
         const query = { _id: cart._id };
 
-        const cartDoc = await Cart.updateOne(query, { $push: { products: products } }).exec();
-        decreaseInventory(products);
+        const cartDoc = await Cart.updateOne(query, { $push: { products: products },
+                                                      $inc : {total : total}}).exec();
+        decreaseInventory(products,null);
         res.status(200).json({
           success: true,
           cartDoc
@@ -81,15 +88,17 @@ async function addProductToCart(req, res) {
       const items = req.body.products;
       const products = store.caculateItemsPrice(items);
       const merchant = products[0].merchant;
+      const total = store.caculateCartTotal(items);
       const cart = new Cart({
         user,
         products,
-        merchant
+        merchant,
+        total
       });
 
       const cartDoc = await cart.save();
 
-      decreaseInventory(products);
+      decreaseInventory(products,null);
 
       res.status(200).json({
         success: true,
@@ -103,10 +112,12 @@ async function addProductToCart(req, res) {
     });
   }
 }
-async function increaseQuantityOne(req, res) {
+async function modifyQuantity(req, res) {
   try {
     const productId =  req.params.productId;
     const query = { _id: req.params.cartId };
+    const previousQuantity = req.body.previousQuantity;
+    const currentQuantity = req.body.currentQuantity;
     let cart = await Cart.findById(req.params.cartId);
     let element = -1;
     cart.products.forEach((item, index) => {
@@ -114,56 +125,28 @@ async function increaseQuantityOne(req, res) {
         element = index;
       }
     });
-    decreaseInventoryOne([cart.products[element]]);
     const price = cart.products[element].purchasePrice;
     await Cart.updateOne(
       query,
-      { $inc: { "products.$[element].quantity": + 1 } },
+      { $set: { "products.$[element].quantity": currentQuantity } },
       { arrayFilters: [{ "element._id": { $eq: productId } }] }
     );
+    const check = await Product.findById(cart.products[element].product._id);
+    if ((check.quantity+previousQuantity)-currentQuantity < 0){
+      res.status(400).json({
+        error: `Only ${check.quantity + previousQuantity} left in stock. Please take less!`
+      });
+      return;
+    }
+    decreaseInventory([cart.products[element]],previousQuantity,currentQuantity);
     await Cart.updateOne(
       query,
-      {$inc : { "products.$[element].totalPrice": + price } },
-     { arrayFilters: [{ "element._id": { $eq: productId } }] }
+      {$set : { "products.$[element].totalPrice": currentQuantity*price },
+       $inc : { total : (currentQuantity-previousQuantity)*price }},
+      { arrayFilters: [{ "element._id": { $eq: productId } }] }
     );
     res.status(200).json({
       success: true,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
-    });
-  }
-}
-async function decreaseQuantityOne(req, res) {
-  try {
-    const query = { _id: req.params.cartId };
-    const productId =  req.params.productId;
-    let cart = await Cart.findById(req.params.cartId);
-    let element = -1;
-    cart.products.forEach((item, index) => {
-      if ((item._id.toString()) == (productId)) {
-        element = index;
-      }
-    });
-    increaseInventoryOne([cart.products[element]]);
-    const price = cart.products[element].purchasePrice;
-    
-    await Cart.updateOne(
-      query,
-     {$inc : { "products.$[element].quantity": - 1 } },
-     { arrayFilters: [{ "element._id": { $eq: productId } }] }
-    );
-    await Cart.updateOne(
-      query,
-      {$inc : { "products.$[element].totalPrice": - price } },
-     { arrayFilters: [{ "element._id": { $eq: productId } }] }
-    );
-    cart = await Cart.findById(req.params.cartId);
-    res.status(200).json({
-      success: true,
-      cart
     });
   } catch (error) {
     console.log(error);
@@ -212,7 +195,6 @@ async function deleteProductFromCart(req, res) {
       updated
     });
   } catch (error) {
-    console.log(error);
     res.status(400).json({
       error: 'Your request could not be processed. Please try again.'
     });
@@ -220,47 +202,35 @@ async function deleteProductFromCart(req, res) {
 }
 
 
-const decreaseInventory = products => {
+const decreaseInventory = (products,previousQuantity,currentQuantity) => {
   let bulkOptions = products.map(item => {
+   if(previousQuantity != null){
     return {
       updateOne: {
         filter: { _id: item.product },
-        update: { $inc: { quantity: -item.quantity } }
+        update: { $inc: { quantity: (previousQuantity-currentQuantity) } }
       }
     };
+   }else{
+      return {
+        updateOne: {
+          filter: { _id: item.product },
+          update: { $inc: { quantity: -item.quantity } }
+        }
+      }
+    }
   });
   Product.bulkWrite(bulkOptions);
 };
-const increaseInventory = products => {
+const increaseInventory = (products) => {
   let bulkOptions = products.map(item => {
-    return {
-      updateOne: {
-        filter: { _id: item.product },
-        update: { $inc: { quantity: +item.quantity } }
+      return {
+        updateOne: {
+          filter: { _id: item.product },
+          update: { $inc: { quantity: +item.quantity } }
+        }
       }
-    };
-  });
-  Product.bulkWrite(bulkOptions);
-};
-const decreaseInventoryOne = products => {
-  let bulkOptions = products.map(item => {
-    return {
-      updateOne: {
-        filter: { _id: item.product },
-        update: { $inc: { quantity: -item.quantity } }
-      }
-    };
-  });
-  Product.bulkWrite(bulkOptions);
-};
-const increaseInventoryOne = products => {
-  let bulkOptions = products.map(item => {
-    return {
-      updateOne: {
-        filter: { _id: item.product },
-        update: { $inc: { quantity: +item.quantity } }
-      }
-    };
+    
   });
   Product.bulkWrite(bulkOptions);
 };
@@ -271,6 +241,5 @@ module.exports = {
   deleteCart,
   addProductToCart,
   deleteProductFromCart,
-  increaseQuantityOne,
-  decreaseQuantityOne
+  modifyQuantity
 };
