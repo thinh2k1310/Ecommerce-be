@@ -1,5 +1,5 @@
 const express = require('express');
-
+const upload = require('../../services/multer');
 
 const productRouter = express.Router();
 
@@ -17,15 +17,17 @@ productRouter.post('/list', productController.filterProduct);
 
 productRouter.get('/list/search/:name', productController.searchProduct);
 
+productRouter.get('/list/merchant/:slug', productController.getProductsOfMerchant);
+
 // -------------- MERCHANT -----------------
 
 productRouter.get('/trashes',auth,role.checkRole( role.ROLES.Merchant), productController.getTrashProducts);
 
 productRouter.get('/:id',auth,role.checkRole( role.ROLES.Merchant), productController.getProductById);
 
-productRouter.post('/add',auth,role.checkRole(role.ROLES.Merchant), productController.addProduct);
+productRouter.post('/add',auth,role.checkRole(role.ROLES.Merchant),upload.array('image'), productController.addProduct);
 
-productRouter.put('/:id',auth,role.checkRole( role.ROLES.Merchant), productController.updateProduct);
+productRouter.put('/:id',auth,role.checkRole( role.ROLES.Merchant),upload.array('image'), productController.updateProduct);
 
 productRouter.put('/delete/:id',auth,role.checkRole( role.ROLES.Merchant), productController.softDeleteProduct);
 
