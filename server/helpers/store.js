@@ -13,7 +13,7 @@ exports.disableProducts = products => {
   Product.bulkWrite(bulkOptions);
 };
 
-// calculate order tax amount
+// calculate an item amount
 exports.caculateItemPrice = order => {
   
   if (order.products && order.products.length > 0) {
@@ -49,7 +49,7 @@ exports.caculateOrderTotal = order => {
   return total;
 };
 
-// calculate order tax amount
+// calculate all items amount
 exports.caculateItemsPrice = items => {
   const products = items.map(item => {
    

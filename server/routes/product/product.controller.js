@@ -1,5 +1,6 @@
-const multer = require('multer');
-const AWS = require('aws-sdk');
+const cloudinary = require('../../services/cloudinary')
+const fs = require('fs');
+
 const Mongoose = require('mongoose');
 var jwt = require('jsonwebtoken');
 
@@ -13,8 +14,7 @@ const Wishlist = require('../../models/wishlist');
 const checkAuth = require('../../helpers/auth');
 
 
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
+
 
 //  -------------- USER -----------------
 // fetch product slug api
@@ -301,10 +301,10 @@ async function filterProduct(req, res){
         },
         {
           $lookup: {
-            from: 'brands',
-            localField: 'brand',
+            from: 'merchants',
+            localField: 'merchant',
             foreignField: '_id',
-            as: 'brands'
+            as: 'merchants'
           }
         },
         {
@@ -313,16 +313,16 @@ async function filterProduct(req, res){
           }
         },
         {
-          $unwind: '$brands'
+          $unwind: '$merchants'
         },
         {
           $addFields: {
-            'brand.name': '$brands.name',
-            'brand._id': '$brands._id',
-            'brand.isActive': '$brands.isActive'
+            'merchant.name': '$merchants.name',
+            'merchant._id': '$merchants._id',
+            'merchant.isActive': '$merchants.isActive'
           }
         },
-        { $project: { brands: 0 } }
+        { $project: { merchants: 0 } }
       ]);
 
       res.status(200).json({
@@ -333,9 +333,9 @@ async function filterProduct(req, res){
       });
     } else {
       const products = await Product.find({
-        brand: brand._id,
+        merchant: merchant._id,
         isActive: true
-      }).populate('brand', 'name');
+      }).populate('merchant', 'name');
 
       res.status(200).json({
         products: products.reverse().slice(0, 8),
@@ -395,10 +395,10 @@ async function getProductById(req, res){
       const quantity = req.body.quantity;
       const price = req.body.price;
       const subcategory = req.body.subcategory
-      const image = req.file;
+      const image = req.files[0];
       const merchant = req.user.merchant
       //Get category
-      const subcate = await Subcategory.findOne({_id : subcategory._id});
+      const subcate = await Subcategory.findOne({_id : subcategory});
       const category = subcate.category;
       if (!description || !name) {
         return res
@@ -418,29 +418,16 @@ async function getProductById(req, res){
         return res.status(400).json({ error: 'You must choose a subcategory.' });
       }
 
+      const uploader = async (path) => await cloudinary.uploads(path, 'Images');
 
       let imageUrl = '';
-      let imageKey = '';
+      let imageId = '';
 
       if (image) {
-        const s3bucket = new AWS.S3({
-          accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-          region: process.env.AWS_REGION
-        });
-
-        const params = {
-          Bucket: process.env.AWS_BUCKET_NAME,
-          Key: image.originalname,
-          Body: image.buffer,
-          ContentType: image.mimetype,
-          ACL: 'public-read'
-        };
-
-        const s3Upload = await s3bucket.upload(params).promise();
-
-        imageUrl = s3Upload.Location;
-        imageKey = s3Upload.key;
+        const { path } = image;
+        const newPath = await uploader(path)
+        imageUrl = newPath.url;
+        imageId = newPath.id;
       }
 
       const product = new Product({
@@ -452,7 +439,7 @@ async function getProductById(req, res){
         subcategory,
         merchant,
         imageUrl,
-        imageKey
+        imageId
       });
 
       const savedProduct = await product.save();
@@ -475,10 +462,55 @@ async function getProductById(req, res){
 async function updateProduct(req, res){
     try {
       const productId = req.params.id;
-      const update = req.body.product;
       const query = { _id: productId };
+      const newName = req.body.name;
+      const newDescription = req.body.description;
+      const newQuantity = req.body.quantity;
+      const newPrice = req.body.price;
+      const newSubcategory = req.body.subcategory
+      const image = req.files[0];
+      //Get category
+      const subcate = await Subcategory.findOne({_id : newSubcategory});
+      const newCategory = subcate.category;
+      if (!newDescription || !newName) {
+        return res
+          .status(400)
+          .json({ error: 'You must enter description & name.' });
+      }
 
-      await Product.findOneAndUpdate(query, update, {
+      if (!newQuantity) {
+        return res.status(400).json({ error: 'You must enter a quantity.' });
+      }
+
+      if (!newPrice) {
+        return res.status(400).json({ error: 'You must enter a price.' });
+      }
+
+      if (!newSubcategory) {
+        return res.status(400).json({ error: 'You must choose a subcategory.' });
+      }
+      
+      const uploader = async (path) => await cloudinary.uploads(path, 'Images');
+
+      let newImageUrl = '';
+      let newImageId = '';
+      if (image) {
+        const { path } = image;
+        const newPath= await uploader(path);
+        newImageUrl = newPath.url;
+        newImageId = newPath.id;
+      }
+
+      await Product.findOneAndUpdate(query,{
+        name : newName,
+        description : newDescription,
+        quantity : newQuantity,
+        price : newPrice,
+        category : newCategory,
+        subcategory : newSubcategory,
+        imageUrl : newImageUrl,
+        imageId : newImageId
+      }, {
         new: true
       });
 
@@ -581,5 +613,6 @@ module.exports = {
     softDeleteProduct,
     getTrashProducts,
     deleteProduct,
-    restoreProduct
+    restoreProduct,
+    getProductsOfMerchant
 };

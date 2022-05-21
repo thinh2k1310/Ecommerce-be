@@ -1,6 +1,7 @@
 # Config file
 config/config.js
 .env
+upload
 
 # Dependencies
 node_modules
