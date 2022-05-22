@@ -41,6 +41,7 @@
     "passport-facebook": "^3.0.0",
     "passport-google-oauth2": "^0.2.0",
     "passport-jwt": "^4.0.0",
+    "paypal-rest-sdk": "^1.8.1",
     "session-storage": "^1.0.1"
   },
   "devDependencies": {

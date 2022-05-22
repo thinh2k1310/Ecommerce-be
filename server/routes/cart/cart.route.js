@@ -12,7 +12,7 @@ cartRouter.get('/', auth, cartController.getAllMyCarts);
 cartRouter.post('/add', auth, cartController.addProductToCart);
 cartRouter.delete('/delete/:cartId', auth, cartController.deleteCart);
 cartRouter.delete('/delete/:cartId/:productId', auth, cartController.deleteProductFromCart);
-cartRouter.put('/increase/:cartId/:productId',auth, cartController.increaseQuantityOne);
-cartRouter.put('/decrease/:cartId/:productId',auth, cartController.decreaseQuantityOne);
+cartRouter.put('/modify/:cartId/:productId',auth, cartController.modifyQuantity);
+
 
 module.exports = cartRouter;

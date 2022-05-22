@@ -1,55 +1,5 @@
 const Product = require('../models/product');
 
-exports.disableProducts = products => {
-  let bulkOptions = products.map(item => {
-    return {
-      updateOne: {
-        filter: { _id: item._id },
-        update: { isActive: false }
-      }
-    };
-  });
-
-  Product.bulkWrite(bulkOptions);
-};
-
-// calculate an item amount
-exports.caculateItemPrice = order => {
-  
-  if (order.products && order.products.length > 0) {
-    order.products.map(item => {
-      const price = item.purchasePrice || item.product.price;
-      const quantity = item.quantity;
-      item.totalPrice = price * quantity;
-      item.purchasePrice = price;
-    });
-  }
-
-
-  const currentTotal = this.caculateOrderTotal(order);
-
-  if (currentTotal !== order.total) {
-    order.total = this.caculateOrderTotal(order);
-  }
-
-  order.totalWithTax = order.total + order.totalTax;
-  order.total = parseFloat(Number(order.total.toFixed(2)));
-  order.totalTax = parseFloat(
-    Number(order.totalTax && order.totalTax.toFixed(2))
-  );
-  order.totalWithTax = parseFloat(Number(order.totalWithTax.toFixed(2)));
-  return order;
-};
-
-exports.caculateOrderTotal = order => {
-  const total = order.products
-    .filter(item => item.status !== 'Cancelled')
-    .reduce((sum, current) => sum + current.totalPrice, 0);
-
-  return total;
-};
-
-// calculate all items amount
 exports.caculateItemsPrice = items => {
   const products = items.map(item => {
    
@@ -64,6 +14,14 @@ exports.caculateItemsPrice = items => {
   });
 
   return products;
+};
+// calculate Cart total
+exports.caculateCartTotal = items => {
+  var total = 0;
+  items.forEach(function (item) {
+    total += item.totalPrice;
+});
+  return total;
 };
 
 
