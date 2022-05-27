@@ -1,8 +1,8 @@
-const express = require('express');
+
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-const passport = require('passport');
+
 
 // Bring in Models & Helpers
 const Merchant = require('../../models/merchant');
@@ -13,35 +13,48 @@ const Product = require('../../models/product');
 const role = require('../../middleware/role');
 const mailgun = require('../../services/mailgun');
 const keys = require('../../config/keys');
-const merchant = require('../../models/merchant');
+
 
 const { secret, tokenLife } = keys.jwt;
 
 
 async function requestNewMerchantApproval(req, res) {
   try {
-    const name = req.body.name;
+    console.log(req.user);
+    const name = req.user.firstName;
+    const phoneNumber = req.user.phoneNumber;
+    const email = req.user.email;
     const business = req.body.business;
-    const phoneNumber = req.body.phoneNumber;
-    const email = req.body.email;
     const categories = req.body.categories;
 
     if (!name || !email) {
       return res
         .status(400)
-        .json({ error: 'You must enter your name and email.' });
+        .json({
+          success : false,
+          message: 'You must login/register first.' ,
+          data : null
+          });
     }
 
     if (!business) {
       return res
         .status(400)
-        .json({ error: 'You must enter a business description.' });
+        .json({ 
+          success : false,
+          data : null,
+          message : 'You must enter a business description.' 
+        });
     }
 
-    if (!phoneNumber || !email) {
+    if (!categories) {
       return res
         .status(400)
-        .json({ error: 'You must enter a phone number and an email address.' });
+        .json({ 
+          success : false,
+          data : null,
+          message : 'You must choose at least 1 category.' 
+        });
     }
 
     const existingMerchant = await Merchant.findOne({ email });
@@ -49,7 +62,11 @@ async function requestNewMerchantApproval(req, res) {
     if (existingMerchant) {
       return res
         .status(400)
-        .json({ error: 'That email address is already in use.' });
+        .json({ 
+          success : false,
+          data : null,
+          message : 'This user is already a merchant.' 
+        });
     }
 
     const merchant = new Merchant({
@@ -66,12 +83,15 @@ async function requestNewMerchantApproval(req, res) {
 
     res.status(200).json({
       success: true,
-      message: `We received your request! we will reach you on your phone number ${phoneNumber}!`,
-      merchant: merchantDoc
+      message: `We received your request! We will reach you on your phone number ${phoneNumber}!`,
+      data : merchantDoc
     });
   } catch (error) {
+    console.log(error);
     return res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      data : null,
+      message : 'Your request could not be processed. Please try again.'
     });
   }
 }
@@ -103,7 +123,9 @@ async function approveMerchantApplication(req, res) {
   } catch (error) {
     console.log(error)
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      data : null,
+      message : 'Your request could not be processed. Please try again.'
     });
   }
 }
@@ -126,7 +148,9 @@ async function rejectMerchantApplication(req, res) {
     });
   } catch (error) {
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      data : null,
+      message : 'Your request could not be processed. Please try again.'
     });
   }
 }
@@ -199,21 +223,44 @@ async function createMerchant(req, res) {
   } catch (error) {
     console.log(error)
     return res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      data : null,
+      message : 'Your request could not be processed. Please try again.'
+    });
+  }
+}
+async function getAllMerchantRequests(req, res) {
+  try {
+    const merchants = await Merchant.find({status : "Waiting Approval"}).sort('-created');
+
+    res.status(200).json({
+      success : true,
+      message : "",
+      data : merchants
+    });
+  } catch (error) {
+    res.status(400).json({
+      success : false,
+      data : null,
+      message : 'Your request could not be processed. Please try again.'
     });
   }
 }
 
 async function getAllMerchants(req, res) {
   try {
-    const merchants = await Merchant.find({}).sort('-created');
+    const merchants = await Merchant.find({status : { $ne : "Waiting Approval"}}).sort('-created');
 
     res.status(200).json({
-      merchants
+      success : true,
+      message : "",
+      data : merchants
     });
   } catch (error) {
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      data : null,
+      message : 'Your request could not be processed. Please try again.'
     });
   }
 }
@@ -235,7 +282,9 @@ async function getMerchantById(req, res) {
     });
   } catch (error) {
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      data : null,
+      message : 'Your request could not be processed. Please try again.'
     });
   }
 }
@@ -254,7 +303,9 @@ async function updateMerchant(req, res) {
     });
   } catch (error) {
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      data : null,
+      message : 'Your request could not be processed. Please try again.'
     });
   }
 }
@@ -275,7 +326,9 @@ async function softDeleteMerchant(req, res) {
     });
   } catch (error) {
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      data : null,
+      message : 'Your request could not be processed. Please try again.'
     });
   }
 }
@@ -288,7 +341,9 @@ async function getTrashMerchant(req, res) {
     });
   } catch (error) {
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.',
+      success : false,
+      data : null,
+      message : 'Your request could not be processed. Please try again.',
     });
   }
 }
@@ -309,7 +364,9 @@ async function restoreMerchant(req, res) {
     });
   } catch (error) {
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      data : null,
+      message : 'Your request could not be processed. Please try again.'
     });
   }
 }
@@ -325,7 +382,9 @@ async function deleteMerchant(req, res) {
     });
   } catch (error) {
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.' + error
+      success : false,
+      data : null,
+      message : 'Your request could not be processed. Please try again.' + error
     });
   }
 }
@@ -431,7 +490,9 @@ async function getCategoriesOfMerchant(req, res) {
   } catch (error) {
     console.log(error);
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      data : null,
+      message : 'Your request could not be processed. Please try again.'
     });
   }
 }
@@ -457,7 +518,9 @@ async function getProductOfCategory(req, res) {
     });
   } catch (error) {
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      data : null,
+      message : 'Your request could not be processed. Please try again.'
     });
   }
 }
@@ -482,7 +545,9 @@ async function getProductOfSubcategory(req, res) {
     });
   } catch (error) {
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      data : null,
+      message : 'Your request could not be processed. Please try again.'
     });
   }
 }
@@ -490,6 +555,7 @@ async function getProductOfSubcategory(req, res) {
 
 module.exports = {
   getAllMerchants,
+  getAllMerchantRequests,
   requestNewMerchantApproval,
   approveMerchantApplication,
   rejectMerchantApplication,

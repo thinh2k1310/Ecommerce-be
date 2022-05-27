@@ -1,8 +1,8 @@
-const express = require('express');
+
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-const passport = require('passport');
+
 
 
 // Bring in models and helpers
@@ -19,20 +19,30 @@ async function login(req, res) {
     const { email, password } = req.body;
 
     if (!email) {
-      return res
-        .status(400)
-        .json({ error: 'You must enter an email address.' });
+      return res.status(400) .json({ 
+          success : false,
+          message: 'You must enter an email address.',
+          data : null
+         });
     }
 
     if (!password) {
-      return res.status(400).json({ error: 'You must enter a password.' });
+      return res.status(400).json({
+        success : false,
+        message: 'You must enter a password.',
+        data : null 
+      });
     }
 
     const user = await User.findOne({ email });
     if (!user) {
       return res
         .status(400)
-        .send({ error: 'No user found for this email address.' });
+        .json({ 
+          success : false,
+          message : 'No user found for this email address.' ,
+          data : null
+        });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -40,7 +50,8 @@ async function login(req, res) {
     if (!isMatch) {
       return res.status(400).json({
         success: false,
-        error: 'Password Incorrect'
+        message: 'Password Incorrect',
+        data : data
       });
     }
 
@@ -55,8 +66,9 @@ async function login(req, res) {
     }
     res.status(200).json({
       success: true,
+      message : "",
       token: `Bearer ${token}`,
-      user: {
+      data : {
         id: user.id,
         firstName: user.firstName,
         lastName: user.lastName,
@@ -66,7 +78,9 @@ async function login(req, res) {
     });
   } catch (error) {
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      message : 'Your request could not be processed. Please try again.',
+      data : null
     });
   }
 }
@@ -79,15 +93,27 @@ async function register(req, res) {
       if (!email) {
         return res
           .status(400)
-          .json({ error: 'You must enter an email address.' });
+          .json({
+             success : false,
+             message: 'You must enter an email address.' ,
+             data : null
+            });
       }
 
       if (!firstName || !lastName) {
-        return res.status(400).json({ error: 'You must enter your full name.' });
+        return res.status(400).json({ 
+          success : false,
+          error: 'You must enter your full name.' ,
+          data : null
+        });
       }
 
       if (!password) {
-        return res.status(400).json({ error: 'You must enter a password.' });
+        return res.status(400).json({ 
+          success : false,
+          error: 'You must enter a password.',
+          data : null
+         });
       }
 
       const existingUser = await User.findOne({ email });
@@ -95,7 +121,11 @@ async function register(req, res) {
       if (existingUser) {
         return res
           .status(400)
-          .json({ error: 'That email address is already in use.' });
+          .json({ 
+            success : false,
+            message: 'That email address is already in use.' ,
+            data : null
+          });
       }
       const user = new User({
         email,
@@ -124,8 +154,8 @@ async function register(req, res) {
 
       res.status(200).json({
         success: true,
-        token: `Bearer ${token}`,
-        user: {
+        message : "Sign up successfullly! Please check your email for more information.",
+        data : {
           id: registeredUser.id,
           firstName: registeredUser.firstName,
           lastName: registeredUser.lastName,
@@ -135,7 +165,9 @@ async function register(req, res) {
       });
     } catch (error) {
       res.status(400).json({
-        error: 'Your request could not be processed. Please try again.' 
+        success : false,
+        message : 'Your request could not be processed. Please try again.',
+        data : null
       });
     }
   }
@@ -147,7 +179,11 @@ async function forgotPassword(req, res) {
     if (!email) {
       return res
         .status(400)
-        .json({ error: 'You must enter an email address.' });
+        .json({ 
+          success : false,
+          error: 'You must enter an email address.' ,
+          data : null
+        });
     }
 
     const existingUser = await User.findOne({ email });
@@ -155,7 +191,11 @@ async function forgotPassword(req, res) {
     if (!existingUser) {
       return res
         .status(400)
-        .send({ error: 'No user found for this email address.' });
+        .json({ 
+          success : false,
+          message : 'No user found for this email address.',
+          data : null
+        });
     }
 
     const buffer = crypto.randomBytes(48);
@@ -180,7 +220,9 @@ async function forgotPassword(req, res) {
     });
   } catch (error) {
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      message : 'Your request could not be processed. Please try again.',
+      data : null
     });
   }
 }
@@ -234,18 +276,30 @@ async function changePassword(req, res) {
     const email = req.user.email;
 
     if (!email) {
-      return res.status(401).send('Unauthenticated');
+      return res.status(401).json({
+        success : false,
+        message : 'Unauthenticated',
+        data : null
+      });
     }
 
     if (!password) {
-      return res.status(400).json({ error: 'You must enter a password.' });
+      return res.status(400).json({ 
+        success : false,
+        message: 'You must enter a password.' ,
+        data : null
+      });
     }
 
     const existingUser = await User.findOne({ email });
     if (!existingUser) {
       return res
         .status(400)
-        .json({ error: 'That email address is already in use.' });
+        .json({ 
+          success : false,
+          message : 'That email address is already in use.' ,
+          data : null
+        });
     }
 
     const isMatch = await bcrypt.compare(password, existingUser.password);
@@ -253,7 +307,11 @@ async function changePassword(req, res) {
     if (!isMatch) {
       return res
         .status(400)
-        .json({ error: 'Please enter your correct old password.' });
+        .json({ 
+          success : false,
+          message : 'Please enter your correct old password.',
+          data : null
+        });
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -266,73 +324,19 @@ async function changePassword(req, res) {
     res.status(200).json({
       success: true,
       message:
-        'Password changed successfully. Please login with your new password.'
+        'Password changed successfully. Please login with your new password.',
+      data : null
     });
   } catch (error) {
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      message : 'Your request could not be processed. Please try again.',
+      data : null
     });
   }
 }
 
-function signInByGoogle(){
-  passport.authenticate('google', {
-    session: false,
-    scope: ['profile', 'email'],
-    accessType: 'offline',
-    approvalPrompt: 'force'
-  })
-}
-function getGoogleResponse(req, res) {
-  const payload = {
-    id: req.user.id
-  };
 
-  jwt.sign(payload, secret, { expiresIn: tokenLife }, (err, token) => {
-    const jwt = `Bearer ${token}`;
-
-    const htmlWithEmbeddedJWT = `
-  <html>
-    <script>
-      // Save JWT to localStorage
-      window.localStorage.setItem('token', '${jwt}');
-      // Redirect browser to root of application
-      window.location.href = '/auth/success';
-    </script>
-  </html>       
-  `;
-
-    res.send(htmlWithEmbeddedJWT);
-  });
-}
-
-function signInByFacebook(){
-  passport.authenticate('facebook', {
-    session: false,
-    scope: ['public_profile', 'email']
-  })
-}
-function getFackbookResponse(req, res){
-  const payload = {
-    id: req.user.id
-  };
-
-  jwt.sign(payload, secret, { expiresIn: tokenLife }, (err, token) => {
-    const jwt = `Bearer ${token}`;
-
-    const htmlWithEmbeddedJWT = `
-  <html>
-    <script>
-      // Save JWT to localStorage
-      window.localStorage.setItem('token', '${jwt}');
-      // Redirect browser to root of application
-      window.location.href = '/auth/success';
-    </script>
-  </html>       
-  `;
-    res.send(htmlWithEmbeddedJWT);
-  });
-}
 
 
 
@@ -341,9 +345,5 @@ module.exports = {
   register,
   forgotPassword,
   resetPasswordWithToken,
-  changePassword,
-  signInByGoogle,
-  getGoogleResponse,
-  signInByFacebook,
-  getFackbookResponse
+  changePassword
 }

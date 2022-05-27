@@ -13,7 +13,9 @@ merchantRouter.get('/trash', auth, role.checkRole(role.ROLES.Admin), merchantCon
 
 merchantRouter.get('/', auth, role.checkRole(role.ROLES.Admin), merchantController.getAllMerchants);
 
-merchantRouter.post('/seller-request', merchantController.requestNewMerchantApproval);
+merchantRouter.get('/requests',auth, role.checkRole(role.ROLES.Admin), merchantController.getAllMerchantRequests);
+
+merchantRouter.post('/seller-request',auth, role.checkRole(role.ROLES.Customer), merchantController.requestNewMerchantApproval);
 
 merchantRouter.put('/approve/:merchantId', auth,role.checkRole(role.ROLES.Admin), merchantController.approveMerchantApplication);
 
