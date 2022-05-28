@@ -118,7 +118,9 @@ async function approveMerchantApplication(req, res) {
     );
 
     res.status(200).json({
-      success: true
+      success: true,
+      message : "",
+      data : null
     });
   } catch (error) {
     console.log(error)
@@ -144,7 +146,9 @@ async function rejectMerchantApplication(req, res) {
     });
 
     res.status(200).json({
-      success: true
+      success: true,
+      message : "",
+      data : null
     });
   } catch (error) {
     res.status(400).json({
@@ -170,19 +174,25 @@ async function createMerchant(req, res) {
     if (!name || !email) {
       return res
         .status(400)
-        .json({ error: 'You must enter your name and email.' });
+        .json({ success : false,
+          data : null,
+          message : 'You must enter name and email.' });
     }
 
     if (!business) {
       return res
         .status(400)
-        .json({ error: 'You must enter a business description.' });
+        .json({ success : false,
+          data : null,
+          message : 'You must enter a business description.' });
     }
 
     if (!phoneNumber || !email) {
       return res
         .status(400)
-        .json({ error: 'You must enter a phone number and an email.' });
+        .json({ success : false,
+          data : null,
+          message : 'You must enter a phone number and an email.' });
     }
 
     const existingMerchant = await Merchant.findOne({ email });
@@ -190,7 +200,9 @@ async function createMerchant(req, res) {
     if (existingMerchant) {
       return res
         .status(400)
-        .json({ error: 'That email is already in use.' });
+        .json({ success : false,
+          data : null,
+          message : 'That email is already in use.' });
     }
     const merchant = new Merchant({
       name,
@@ -213,12 +225,12 @@ async function createMerchant(req, res) {
       req.headers.host
     );
 
-    await mailgun.sendEmail(email, 'merchant-signup');
+    await mailgun.sendEmail(email, 'merchant-signup',keys.app.clientURL);
 
     res.status(200).json({
       success: true,
       message: 'Create merchant successfully!',
-      merchant: merchantDoc
+      data : merchantDoc
     });
   } catch (error) {
     console.log(error)
@@ -249,7 +261,10 @@ async function getAllMerchantRequests(req, res) {
 
 async function getAllMerchants(req, res) {
   try {
-    const merchants = await Merchant.find({status : { $ne : "Waiting Approval"}}).sort('-created');
+    const merchants = await Merchant.find({status : { $ne : "Waiting Approval"}}).sort('-created').populate({
+      path: 'categories',
+      select : 'name'
+    });
 
     res.status(200).json({
       success : true,
@@ -273,6 +288,8 @@ async function getMerchantById(req, res) {
 
     if (!merchantDoc) {
       res.status(404).json({
+        success : false,
+        data : null,
         message: `No such merchant with the id: ${merchantId}.`
       });
     }
@@ -294,9 +311,16 @@ async function updateMerchant(req, res) {
     const update = req.body;
     const query = { _id: merchantId };
 
-    await Merchant.findOneAndUpdate(query, update, {
+    const merchantDoc = await Merchant.findOneAndUpdate(query, update, {
       new: true
     });
+    if (!merchantDoc) {
+      res.status(404).json({
+        success : false,
+        data : null,
+        message: `No such merchant with the id: ${merchantId}.`
+      });
+    }
     res.status(200).json({
       success: true,
       message: 'Merchant has been updated successfully!'
@@ -316,13 +340,21 @@ async function softDeleteMerchant(req, res) {
     const update = { isActive: false };
     const query = { _id: merchantId };
 
-    await Merchant.findOneAndUpdate(query, update, {
+    const merchantDoc = await Merchant.findOneAndUpdate(query, update, {
       new: true
     });
+    if (!merchantDoc) {
+      res.status(404).json({
+        success : false,
+        data : null,
+        message: `Can not find merchant with the id: ${merchantId}.`
+      });
+    }
     await Product.updateMany({ merchant: merchantId }, { isActive: false });
     res.status(200).json({
       success: true,
-      message: 'Merchant has been moved to trash!'
+      message: 'Merchant has been inactived!',
+      data : null
     });
   } catch (error) {
     res.status(400).json({
@@ -354,15 +386,24 @@ async function restoreMerchant(req, res) {
     const update = { isActive: true };
     const query = { _id: merchantId };
 
-    await Merchant.findOneAndUpdate(query, update, {
+    const merchantDoc = await Merchant.findOneAndUpdate(query, update, {
       new: true
     });
+    if (!merchantDoc) {
+      res.status(404).json({
+        success : false,
+        data : null,
+        message: `Can not find merchant with the id: ${merchantId}.`
+      });
+    }
     await Product.updateMany({ merchant: merchantId }, { isActive: true });
     res.status(200).json({
       success: true,
-      message: 'Merchant has been restore!'
+      message: 'Merchant has been actived!',
+      data : null
     });
   } catch (error) {
+    console.log(error);
     res.status(400).json({
       success : false,
       data : null,
@@ -502,6 +543,14 @@ async function getProductOfCategory(req, res) {
     const categoryId = req.params.id;
     const merchantUser = await User.findOne({_id : req.user._id});
     console.log(merchantUser);
+    const category = await Category.findById(categoryId);
+    if(!category){
+      res.status(404).json({
+        success : false,
+        data : null,
+        message: `Can not find category with the id: ${categoryId}.`
+      });
+    }
     const products = await Product.find({
       $and: [
         { category: categoryId },
@@ -528,6 +577,14 @@ async function getProductOfCategory(req, res) {
 async function getProductOfSubcategory(req, res) {
   try {
     const subcategoryId = req.params.id;
+    const subcategory = await Subcategory.findById(subcategoryId);
+    if(!subcategory){
+      res.status(404).json({
+        success : false,
+        data : null,
+        message: `Can not find subcategory with the id: ${subcategoryId}.`
+      });
+    }
     const merchantUser = await User.findOne({_id : req.user._id})
     const products = await Product.find({
       $and: [

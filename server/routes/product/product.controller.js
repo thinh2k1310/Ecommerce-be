@@ -472,6 +472,12 @@ async function updateProduct(req, res){
       //Get category
       const subcate = await Subcategory.findOne({_id : newSubcategory});
       const newCategory = subcate.category;
+      const productDoc = await Product.findById(productId);
+      if (!productDoc) {
+        return res.status(404).json({
+          message: 'No product found.'
+        });
+      }
       if (!newDescription || !newName) {
         return res
           .status(400)
@@ -530,9 +536,14 @@ async function softDeleteProduct(req, res){
       const productId = req.params.id;
       const query = { _id: productId };
 
-      await Product.findOneAndUpdate(query, {isActive : false}, {
+      const productDoc = await Product.findOneAndUpdate(query, {isActive : false}, {
         new: true
       });
+      if (!productDoc) {
+        return res.status(404).json({
+          message: `No product found with the id ${productId} .`
+        });
+      }
 
       res.status(200).json({
         success: true,
@@ -571,10 +582,14 @@ async function restoreProduct(req, res){
     const productId = req.params.id;
     const query = { _id: productId };
 
-    await Product.findOneAndUpdate(query, {isActive : true}, {
+    const productDoc = await Product.findOneAndUpdate(query, {isActive : true}, {
       new: true
     });
-
+    if (!productDoc) {
+      return res.status(404).json({
+        message: `No product found with the id ${productId} .`
+      });
+    }
     res.status(200).json({
       success: true,
       message: 'Product has been restored!'

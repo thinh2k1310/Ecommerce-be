@@ -7,7 +7,7 @@ function resetEmail(host, user){
           `${'Forgot your password?\n'+
           'We receive a request to reset your password for your account.\n\n' +
           'To reset your password click on the following link, or paste this into your browser:\n' +
-          'http://'}${host}/api/auth/reset/${user.resetPasswordToken}\n\n` +
+          'http://'}${host}/forgot-password-update-password/${user.resetPasswordToken}\n\n` +
         `If you did not make this request then please ignore this email.\n`
     };
   
@@ -54,7 +54,7 @@ function resetEmail(host, user){
         'Congratulations! Your application has been accepted. Please change your password for your account by clicking on the link below. \n\n' +
         'Please click on the following link, or paste this into your browser to complete the process:\n\n' +
         'http://'
-      }${host}/api/auth/reset/${resetToken}\n\n`
+      }${host}/forgot-password-update-password/${resetToken}\n\n`
     };
   
     return message;

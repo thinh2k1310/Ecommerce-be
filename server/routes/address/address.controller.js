@@ -103,9 +103,16 @@ async function updateAddress(req, res){
     const update = req.body;
     const query = { _id: addressId };
 
-    await Address.findOneAndUpdate(query, update, {
+    const addressDoc = await Address.findOneAndUpdate(query, update, {
       new: true
     });
+    if (!addressDoc) {
+      res.status(404).json({
+        success : false,
+        message: `Cannot find Address with the id: ${addressId}.`,
+        data : null
+      });
+    }
     res.status(200).json({
       success: true,
       message: 'Address has been updated successfully!',
@@ -128,6 +135,12 @@ async function deleteAddress(req, res){
       message : 'You can not delete default address!',
       data : null
     })
+  }else if(!addressToDelete){
+    res.status(404).json({
+      success : false,
+      message: `Cannot find Address with the id: ${addressId}.`,
+      data : null
+    });
   }else {
     await Address.deleteOne({ _id: req.params.id }, (err, data) => {
       if (err) {

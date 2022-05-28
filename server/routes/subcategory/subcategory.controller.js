@@ -12,13 +12,21 @@ function createSubcategory(req, res) {
     if (!description || !name) {
       return res
         .status(400)
-        .json({ error: 'You must enter name & description.' });
+        .json({ 
+          success : false,
+          data : null,
+          message : 'You must enter name & description.' 
+        });
     }
 
     if (!category ) {
       return res
         .status(400)
-        .json({ error: 'You must choose category.' });
+        .json({ 
+          success : false,
+          data : null,
+          message : 'You must choose category.' 
+        });
     }
   
     const subcategory = new Subcategory({
@@ -30,14 +38,16 @@ function createSubcategory(req, res) {
     subcategory.save((err, data) => {
       if (err) {
         return res.status(400).json({
-          error: 'Your request could not be processed. Please try again.'
+          success : false,
+          data : null,
+          message : 'Your request could not be processed. Please try again.'
         });
       }
   
       res.status(200).json({
         success: true,
         message: `Subcategory has been added successfully!`,
-        subcategory: data
+        data : null
       });
     });
   }
@@ -45,13 +55,17 @@ function createSubcategory(req, res) {
 // Get all subcategory
 async function getAllSubcategory(req, res){
   try {
-    const subcategories = await Subcategory.find({});
+    const subcategories = await Subcategory.find({}, {id : 1, name : 1,description : 1,isActive : 1});
     res.status(200).json({
-      subcategories
+      success : true,
+      message : "",
+      data : subcategories
     });
   } catch (error) {
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      data : null,
+      message : 'Your request could not be processed. Please try again.'
     });
   }
 }
@@ -64,17 +78,23 @@ async function getOneSubcategoryById(req, res){
 
     if (!subcategoryDoc) {
       return res.status(404).json({
-        message: 'No Subcategory found.'
+        success : false,
+        data : null,
+        message : 'No subcategory was found.'
       });
     }
 
     res.status(200).json({
-      subcategory: subcategoryDoc
+      success : true,
+      message : "",
+      data: subcategoryDoc
     });
   } catch (error) {
     console.log(error);
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      data : null,
+      message : 'Your request could not be processed. Please try again.'
     });
   }
 }
@@ -92,35 +112,22 @@ async function updateSubcategory(req, res){
 
     res.status(200).json({
       success: true,
-      message: 'Subcategory has been updated successfully!'
+      message: 'Subcategory has been updated successfully!',
+      data : null
     });
   } catch (error) {
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      data : null,
+      message : 'Your request could not be processed. Please try again.'
     });
   }
 }
-// Delete subcategory
-async function deleteSubcategory(req, res){
-  try {
-    const subcategory = await Subcategory.deleteOne({ _id: req.params.id });
 
-    res.status(200).json({
-      success: true,
-      message: `Subcategory has been deleted successfully!`,
-      subcategory
-    });
-  } catch (error) {
-    res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
-    });
-  }
-}
 
 module.exports = {
     createSubcategory,
     getAllSubcategory,
     getOneSubcategoryById,
     updateSubcategory,
-    deleteSubcategory,
 };

@@ -8,14 +8,13 @@ const role = require('../../middleware/role');
 const subcategoryController =  require('./subcategory.controller');
 const subcategoryRouter = express.Router();
 
-subcategoryRouter.post('/add', auth, role.checkRole(role.ROLES.Admin), subcategoryController.createSubcategory);
+//subcategoryRouter.post('/add', auth, role.checkRole(role.ROLES.Admin), subcategoryController.createSubcategory);
 
-subcategoryRouter.get('/', subcategoryController.getAllSubcategory);
+//subcategoryRouter.get('/', subcategoryController.getAllSubcategory);
 
 subcategoryRouter.get('/:id', subcategoryController.getOneSubcategoryById);
 
 subcategoryRouter.put('/:id', auth, role.checkRole(role.ROLES.Admin), subcategoryController.updateSubcategory);
 
-subcategoryRouter.delete('/:id', auth, role.checkRole(role.ROLES.Admin), subcategoryController.deleteSubcategory);
 
 module.exports = subcategoryRouter;

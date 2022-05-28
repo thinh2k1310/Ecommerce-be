@@ -67,7 +67,7 @@ async function login(req, res) {
     res.status(200).json({
       success: true,
       message : "",
-      token: `Bearer ${token}`,
+      token: token,
       data : {
         id: user.id,
         firstName: user.firstName,
@@ -210,7 +210,7 @@ async function forgotPassword(req, res) {
     await mailgun.sendEmail(
       existingUser.email,
       'reset',
-      req.headers.host,
+      keys.app.clientURL,
       existingUser
     );
 
@@ -236,14 +236,15 @@ function resetPasswordWithToken(req, res) {
     (err, resetUser) => {
       if (!resetUser) {
         return res.status(422).json({
-          error:
-            'Your token has expired. Please attempt to reset your password again.'
+         success : false,
+         data : null,
+         message : 'Your token has expired. Please attempt to reset your password again.'
         });
       }
       bcrypt.genSalt(10, (err, salt) => {
         bcrypt.hash(req.body.password, salt, (err, hash) => {
           if (err) {
-            console.log(err);
+            console.log(`err : ${err}`);
           }
           req.body.password = hash;
 
@@ -260,6 +261,8 @@ function resetPasswordWithToken(req, res) {
             mailgun.sendEmail(resetUser.email, message);
 
             return res.status(200).json({
+              success : true,
+              data : null,
               message:
                 'Password changed successfully. Please login with your new password.'
             });
