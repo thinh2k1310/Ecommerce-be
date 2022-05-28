@@ -21,19 +21,23 @@ async function createAddress(req, res){
     await address.save((err, data) => {
       if (err) {
         return res.status(400).json({
-          error: 'Your request could not be processed. Please try again.'
+          success : false,
+          message : 'Your request could not be processed. Please try again.',
+          data : null
         });
       }
   
       res.status(200).json({
         success: true,
         message: `Address has been added successfully!`,
-        address: data
+        data : data
       });
     });
   }catch (error) {
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      message : 'Your request could not be processed. Please try again.',
+      data : null
     });
   }
 
@@ -43,12 +47,16 @@ function getAllAddresses(req, res){
   Address.find({ user: req.user._id }, (err, data) => {
     if (err) {
       return res.status(400).json({
-        error: 'Your request could not be processed. Please try again.'
+        success : false,
+        message : 'Your request could not be processed. Please try again.',
+        data : null
       });
     }
 
     res.status(200).json({
-      addresses: data
+      success : true,
+      message : '',
+      data : data
     });
   });
 }
@@ -61,16 +69,22 @@ async function getAdressById(req, res){
 
     if (!addressDoc) {
       res.status(404).json({
-        message: `Cannot find Address with the id: ${addressId}.`
+        success : false,
+        message: `Cannot find Address with the id: ${addressId}.`,
+        data : null
       });
     }
 
     res.status(200).json({
-      address: addressDoc
+      success : true,
+      message : "",
+      data: addressDoc
     });
   } catch (error) {
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      message : 'Your request could not be processed. Please try again.',
+      data : null
     });
   }
 }
@@ -92,15 +106,16 @@ async function updateAddress(req, res){
     await Address.findOneAndUpdate(query, update, {
       new: true
     });
-    console.log(query)
-    console.log(update)
     res.status(200).json({
       success: true,
-      message: 'Address has been updated successfully!'
+      message: 'Address has been updated successfully!',
+      data : null
     });
   } catch (error) {
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      message : 'Your request could not be processed. Please try again.',
+      data : null
     });
   }
 }
@@ -109,26 +124,31 @@ async function deleteAddress(req, res){
   const addressToDelete =  await Address.findOne({_id: req.params.id})
   if( addressToDelete.isDefault == true){
     res.status(400).json({
-      error : 'You can not delete default address!'
+      success : false,
+      message : 'You can not delete default address!',
+      data : null
     })
   }else {
     await Address.deleteOne({ _id: req.params.id }, (err, data) => {
       if (err) {
         return res.status(400).json({
-          error: 'Your request could not be processed. Please try again.'
+          success : false,
+          message: 'Your request could not be processed. Please try again.'
         });
       }
   
       res.status(200).json({
         success: true,
         message: `Address has been deleted successfully!`,
-        address: data
+        data : data
       });
     });
   }
  }catch (error) {
   res.status(400).json({
-    error: 'Your request could not be processed. Please try again.'
+    success : false,
+    message : 'Your request could not be processed. Please try again.',
+    data : null
   });
  }
 }

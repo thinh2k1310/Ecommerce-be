@@ -12,6 +12,7 @@ categoryRouter.post('/add', auth, role.checkRole(role.ROLES.Admin), categoryCont
 
 categoryRouter.get('/list', categoryController.getCategories);
 
+categoryRouter.get('/', categoryController.getAllCategories);
 
 categoryRouter.put('/:id', auth, role.checkRole(role.ROLES.Admin), categoryController.updateCategory);
 

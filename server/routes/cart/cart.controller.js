@@ -13,11 +13,15 @@ async function getAllMyCarts(req, res) {
     );
 
     res.status(200).json({
-      carts
+      success : true,
+      message : "",
+      data : carts
     });
   } catch (error) {
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      message : 'Your request could not be processed. Please try again.',
+      data : null
     });
   }
 
@@ -31,7 +35,9 @@ async function addProductToCart(req, res) {
     
     if (product.quantity < products[0].quantity){
       res.status(400).json({
-        error: `Only ${product.quantity} left in stock. Please take less!`
+        success : false,
+        message : `Only ${product.quantity} left in stock. Please take less!`,
+        data : null
       });
       return;
     }
@@ -65,7 +71,9 @@ async function addProductToCart(req, res) {
         const total = store.caculateCartTotal(cartt.products);
         await Cart.updateOne(query,{ $set: { total: total }});
         res.status(200).json({
-          success: true
+          success: true,
+          message : "Add product to cart successfully!",
+          data : null
         });
       }
       else {
@@ -78,7 +86,8 @@ async function addProductToCart(req, res) {
         decreaseInventory(products,null);
         res.status(200).json({
           success: true,
-          cartDoc
+          message : "Add product to cart successfully!",
+          data : null
         });
       }
 
@@ -101,14 +110,17 @@ async function addProductToCart(req, res) {
       decreaseInventory(products,null);
 
       res.status(200).json({
-        success: true,
-        cart: cartDoc
+          success: true,
+          message : "Add product to cart successfully!",
+          data : cartDoc
       });
     }
   } catch (error) {
     console.log(error);
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      message : 'Your request could not be processed. Please try again.',
+      data : null
     });
   }
 }
@@ -134,7 +146,9 @@ async function modifyQuantity(req, res) {
     const check = await Product.findById(cart.products[element].product._id);
     if ((check.quantity+previousQuantity)-currentQuantity < 0){
       res.status(400).json({
-        error: `Only ${check.quantity + previousQuantity} left in stock. Please take less!`
+        success : false,
+        message : `Only ${check.quantity + previousQuantity} left in stock. Please take less!`,
+        data : null
       });
       return;
     }
@@ -147,11 +161,15 @@ async function modifyQuantity(req, res) {
     );
     res.status(200).json({
       success: true,
+      message : "",
+      data : ""
     });
   } catch (error) {
     console.log(error);
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      message : 'Your request could not be processed. Please try again.',
+      data : null
     });
   }
 }
@@ -163,11 +181,15 @@ async function deleteCart(req, res) {
     await Cart.deleteOne({ _id: req.params.cartId });
     
     res.status(200).json({
-      success: true
+      success: true,
+      message: "Delete cart successfully!",
+      data : null
     });
   } catch (error) {
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      message : 'Your request could not be processed. Please try again.',
+      data : null
     });
   }
 }
@@ -184,7 +206,7 @@ async function deleteProductFromCart(req, res) {
         element = index;
       }
     });
-    const updated = await Cart.updateOne(query, { $pull: { products: cart.products[element] } }).exec();
+   await Cart.updateOne(query, { $pull: { products: cart.products[element] } }).exec();
     increaseInventory([cart.products[element]]);
     const updatedCart = await Cart.findById(req.params.cartId);
     if(updatedCart.products.length == 0){
@@ -192,11 +214,14 @@ async function deleteProductFromCart(req, res) {
     }
     res.status(200).json({
       success: true,
-      updated
+      message : false,
+      data : null
     });
   } catch (error) {
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      message : 'Your request could not be processed. Please try again.',
+      data : null
     });
   }
 }

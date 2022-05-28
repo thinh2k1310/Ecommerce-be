@@ -24,7 +24,9 @@ function createCategory(req, res) {
     category.save((err, data) => {
       if (err) {
         return res.status(400).json({
-          error: 'Your request could not be processed. Please try again.'
+          success : false,
+          message : 'Your request could not be processed. Please try again.',
+          data : null
         });
       }
   
@@ -53,7 +55,9 @@ async function updateCategory(req, res){
     });
   } catch (error) {
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      message : 'Your request could not be processed. Please try again.',
+      data : null
     });
   }
 }
@@ -63,11 +67,15 @@ async function getAllCategories(req, res){
   try {
     const categories = await Category.find({});
     res.status(200).json({
-      categories
+      success : true,
+      message : "",
+      data : categories
     });
   } catch (error) {
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      message : 'Your request could not be processed. Please try again.',
+      data : null
     });
   }
 }
@@ -75,46 +83,32 @@ async function getAllCategories(req, res){
 async function getCategories(req,res) {
   try{
   const categories = await  Category.find({});
+  console.log(categories);
   const data = [];
   var getData = new Promise((resolve,reject) => {
     categories.forEach(async (category, index, array) => {
       const subcategories = await Subcategory.find({category : category._id});
       data.push({
-        category_id: category._id,
-        category_name: category.name,
-        subcategories : subcategories
-      });
-      if (index === array.length -1) resolve();
-
-      // data.menu.categories.forEach(_category => {
-      //     _category.items = items.filter(item => item.cat_id === _category.id_category)
-      //         .map(item => ({
-      //             id_item: item.id_item,
-      //             title: item.title,
-      //         }));
-
-      //     _category.subcategories = categories.filter(__category => __category.parent_id === _category.id);
-
-      //     _category.subcategories.forEach(subcategory => {
-      //         subcategory.items = items.filter(item => item.cat_id === subcategory.id_category)
-      //             .map(item => ({
-      //                 id_item: item.id_item,
-      //                 title: item.title,
-      //             }));
-
-      //     });
-      // });
+          category_id: category._id,
+          category_name: category.name,
+          subcategories : subcategories
+        });
+        if (index === array.length -1) resolve();
   });
 });
 getData.then(() => {
   res.status(200).json({
-    categories : data
+    success : true,
+    message : "",
+    data : data
   });
 });
 }catch(error) {
     console.log(error);
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      message : 'Your request could not be processed. Please try again.',
+      data : null
     });
   }
 }
