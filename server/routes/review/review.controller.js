@@ -52,8 +52,7 @@ async function getReviewsOfProduct(req, res){
     }
 
     const reviews = await Review.find({
-      product: productDoc._id,
-      status: 'Approved'
+      product: productDoc._id
     })
       .populate({
         path: 'user',

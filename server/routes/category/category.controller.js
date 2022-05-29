@@ -90,30 +90,64 @@ async function updateCategory(req, res){
   }
 }
 
-// Get all category
-async function getAllCategories(req, res){
+// Get all category for admin
+async function getAllCategoriesForAdmin(req, res){
   try{
-    const categories = await  Category.find({});
+    const categories = await Category.find({});
     const data = [];
-    var getData = new Promise((resolve,reject) => {
-      categories.forEach(async (category, index, array) => {
+    await Promise.all(categories.map(async (category,index) => {
         const subcategories = await Subcategory.find({category : category._id}, {id : 1, name : 1,description : 1});
+        console.log(` => ${index}`);
         data.push({
             _id: category._id,
            name: category.name,
            description : category.description,
-            subcategories : subcategories
+           subcategories : subcategories
           });
-          if (index === array.length -1) resolve();
-    });
+  }));
+  data.sort((a, b) => {
+    let fa = a.name.toLowerCase(),
+        fb = b.name.toLowerCase();
+
+    if (fa < fb) {
+        return -1;
+    }
+    if (fa > fb) {
+        return 1;
+    }
+    return 0;
+});
+  res.status(200).json({
+    success : true,
+    message : "",
+    data : data
   });
-  getData.then(() => {
-    res.status(200).json({
-      success : true,
-      message : "",
-      data : data
-    });
-  });
+  //   const getData = new Promise((resolve,reject) => {
+  //     categories.map(async (category, index, array) => {
+  //       console.log(index);
+  //       const subcategories = await Subcategory.find({category : category._id}, {id : 1, name : 1,description : 1});
+  //       console.log(` => ${index}`);
+  //       data.push({
+  //           _id: category._id,
+  //          name: category.name,
+  //          description : category.description,
+  //          subcategories : subcategories
+  //         });
+          
+  //         if (index === array.length -1) {
+  //           console.log(data.length);
+  //           resolve();
+  //         }
+
+  //   });
+  // });
+  // await getData.then(() => {
+  //   res.status(200).json({
+  //     success : true,
+  //     message : "",
+  //     data : data
+  //   });
+  // });
   }catch(error) {
       console.log(error);
       res.status(400).json({
@@ -122,9 +156,9 @@ async function getAllCategories(req, res){
         data : null
       });
     }
-}
-//Get all categories and subcategories
-async function getCategories(req,res) {
+  }
+//Get all categories for user
+async function getCategoriesForUser(req,res) {
   try{
   const categories = await  Category.find({});
   const data = [];
@@ -277,8 +311,8 @@ async function getOneCategoryById(req, res){
 module.exports = {
     createCategory,
     updateCategory,
-    getCategories,
-    getAllCategories,
+    getAllCategoriesForAdmin,
+    getCategoriesForUser,
     getAllSubcategories,
     createSubcategory,
     getOneCategoryById

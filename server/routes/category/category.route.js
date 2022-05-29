@@ -10,9 +10,9 @@ const categoryRouter = express.Router();
 
 categoryRouter.post('/add', auth, role.checkRole(role.ROLES.Admin), categoryController.createCategory);
 
-categoryRouter.get('/list', categoryController.getCategories);
+categoryRouter.get('/list', categoryController.getCategoriesForUser);
 
-categoryRouter.get('/', categoryController.getAllCategories);
+categoryRouter.get('/', categoryController.getAllCategoriesForAdmin);
 
 categoryRouter.put('/:id', auth, role.checkRole(role.ROLES.Admin), categoryController.updateCategory);
 

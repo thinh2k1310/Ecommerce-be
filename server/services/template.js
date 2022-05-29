@@ -7,7 +7,7 @@ function resetEmail(host, user){
           `${'Forgot your password?\n'+
           'We receive a request to reset your password for your account.\n\n' +
           'To reset your password click on the following link, or paste this into your browser:\n' +
-          'http://'}${host}/forgot-password-update-password/${user.resetPasswordToken}\n\n` +
+          ''}${host}/forgot-password-update-password/${user.resetPasswordToken}\n\n` +
         `If you did not make this request then please ignore this email.\n`
     };
   

@@ -202,7 +202,7 @@ async function createMerchant(req, res) {
         .status(400)
         .json({ success : false,
           data : null,
-          message : 'That email is already in use.' });
+          message : 'That email user is already a merchant.' });
     }
     const merchant = new Merchant({
       name,
@@ -425,7 +425,7 @@ async function deleteMerchant(req, res) {
     res.status(400).json({
       success : false,
       data : null,
-      message : 'Your request could not be processed. Please try again.' + error
+      message : 'Your request could not be processed. Please try again.'
     });
   }
 }

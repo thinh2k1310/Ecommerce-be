@@ -31,16 +31,20 @@ const checkAuth = require('../../helpers/auth');
 
     if (!productDoc || (productDoc && productDoc?.merchant?.isActive === false)) {
       return res.status(404).json({
-        message: 'No product found.'
+        success : false,
+        message: 'No product found!'
       });
     }
 
     res.status(200).json({
-      product: productDoc
+      success : true,
+      data : productDoc
     });
   } catch (error) {
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      data : null,
+      message : 'Your request could not be processed. Please try again.'
     });
   }
 }
@@ -66,7 +70,9 @@ const checkAuth = require('../../helpers/auth');
     });
   } catch (error) {
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      data : null,
+      message : 'Your request could not be processed. Please try again.'
     });
   }
 }
@@ -76,6 +82,7 @@ async function filterProduct(req, res){
   try {
     let {
       name,
+      merchant,
       sortOrder,
       rating,
       max,
@@ -88,6 +95,7 @@ async function filterProduct(req, res){
     const pageSize = 8;
     const categoryFilter = category ? { category } : {};
     const subcategoryFilter = subcategory ? { subcategory } : {};
+    const merchantFilter = merchant ? { merchant } : {};
     const priceFilter = min && max ? { price: { $gte: min, $lte: max } } : {};
     const ratingFilter = rating
       ? { rating: { $gte: rating } }
@@ -133,10 +141,31 @@ async function filterProduct(req, res){
         }
       }
     ];
+  let productsMerchant = null;
+  if (merchant != null){
+    const merchantDoc = await Merchant.findOne({ slug: merchantFilter.merchant, isActive: true });
+    if (merchantDoc){
+      productsMerchant = await Product.find({merchant : merchantDoc._id}, '_id');
+    }
+    const ids = [];
+    productsMerchant.forEach(product => {
+     ids.push(product._id)
+   });
+    if ((merchantDoc) && (merchantFilter !== merchant)) {
+      basicQuery.push({
+        $match: {
+          isActive: true,
+          _id: {
+            $in: Array.from(ids)
+          }
+        }
+      });
+    }
+  }
 
     const userDoc = await checkAuth(req);
     let productsCategory = null;
-   if(category || subcategory){
+   if(category != null || subcategory != null){
     const categoryDoc = await Category.findOne({ slug: categoryFilter.category, isActive: true });
     const subcategoryDoc = await Subcategory.findOne({ slug: subcategoryFilter.subcategory, isActive: true });
     if (categoryDoc){
@@ -159,6 +188,7 @@ async function filterProduct(req, res){
       });
     }
    }
+   
     
 
     // if(name){
@@ -244,6 +274,9 @@ async function filterProduct(req, res){
     }
 
     res.status(200).json({
+      success : true,
+      message : "",
+      data : {
       products,
       page,
       pages:
@@ -251,11 +284,14 @@ async function filterProduct(req, res){
           ? Math.ceil(productsCount.length / pageSize)
           : 0,
       totalProducts: productsCount.length
+      }
     });
   } catch (error) {
     console.log(error);
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      data : null,
+      message : 'Your request could not be processed. Please try again.'
     });
   }
 }
@@ -268,7 +304,9 @@ async function filterProduct(req, res){
 
     if (!merchant) {
       return res.status(404).json({
-        message: `Cannot find merchant with the name: ${slug}.`
+        success : false,
+      data : null,
+      message : "Cannot find merchant with the name: ${slug}."
       });
     }
 
@@ -326,10 +364,12 @@ async function filterProduct(req, res){
       ]);
 
       res.status(200).json({
+        success : true,
+        data :{
         products: products.reverse().slice(0, 8),
         page: 1,
         pages: products.length > 0 ? Math.ceil(products.length / 8) : 0,
-        totalProducts: products.length
+        totalProducts: products.length}
       });
     } else {
       const products = await Product.find({
@@ -338,19 +378,25 @@ async function filterProduct(req, res){
       }).populate('merchant', 'name');
 
       res.status(200).json({
+        success : true,
+        message : "",
+        data : {
         products: products.reverse().slice(0, 8),
         page: 1,
         pages: products.length > 0 ? Math.ceil(products.length / 8) : 0,
         totalProducts: products.length
+        }
       });
     }
   } catch (error) {
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      data : null,
+      message : 'Your request could not be processed. Please try again.'
     });
   }
 }
-async function selectProduct (req, res){
+async function selectProduct(req, res){
   try {
     const products = await Product.find({}, 'name');
 
@@ -359,7 +405,9 @@ async function selectProduct (req, res){
     });
   } catch (error) {
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      data : null,
+      message : 'Your request could not be processed. Please try again.'
     });
   }
 }
@@ -375,15 +423,19 @@ async function getProductById(req, res){
 
     if (!productDoc) {
       return res.status(404).json({
+        success : false,
         message: 'No product found.'
       });
     }
     res.status(200).json({
-      product: productDoc
+      success : true,
+      data : productDoc
     });
   } catch (error) {
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      data : null,
+      message : 'Your request could not be processed. Please try again.'
     });
   }
 }
@@ -403,19 +455,27 @@ async function getProductById(req, res){
       if (!description || !name) {
         return res
           .status(400)
-          .json({ error: 'You must enter description & name.' });
+          .json({ success : false,
+            data : null,
+            message : 'You must enter description & name.' });
       }
 
       if (!quantity) {
-        return res.status(400).json({ error: 'You must enter a quantity.' });
+        return res.status(400).json({ success : false,
+          data : null,
+          message : 'You must enter a quantity.' });
       }
 
       if (!price) {
-        return res.status(400).json({ error: 'You must enter a price.' });
+        return res.status(400).json({ success : false,
+          data : null,
+          message : 'You must enter a price.' });
       }
 
       if (!subcategory) {
-        return res.status(400).json({ error: 'You must choose a subcategory.' });
+        return res.status(400).json({ success : false,
+          data : null,
+          message : 'You must choose a subcategory.' });
       }
 
       const uploader = async (path) => await cloudinary.uploads(path, 'Images');
@@ -446,13 +506,15 @@ async function getProductById(req, res){
 
       res.status(200).json({
         success: true,
-        message: `Product has been added successfully!`,
+        message: 'Product has been added successfully!',
         product: savedProduct
       });
     } catch (error) {
       console.log(error);
       return res.status(400).json({
-        error: 'Your request could not be processed. Please try again.'
+        success : false,
+      data : null,
+      message : 'Your request could not be processed. Please try again.'
       });
     }
 }
@@ -481,19 +543,27 @@ async function updateProduct(req, res){
       if (!newDescription || !newName) {
         return res
           .status(400)
-          .json({ error: 'You must enter description & name.' });
+          .json({success : false,
+            data : null,
+            message : 'You must enter description & name' });
       }
 
       if (!newQuantity) {
-        return res.status(400).json({ error: 'You must enter a quantity.' });
+        return res.status(400).json({ success : false,
+          data : null,
+          message : 'You must enter a quantity.' });
       }
 
       if (!newPrice) {
-        return res.status(400).json({ error: 'You must enter a price.' });
+        return res.status(400).json({ success : false,
+          data : null,
+          message : 'You must enter a price.' });
       }
 
       if (!newSubcategory) {
-        return res.status(400).json({ error: 'You must choose a subcategory.' });
+        return res.status(400).json({ success : false,
+          data : null,
+          message : 'You must choose a subcategory.' });
       }
       
       const uploader = async (path) => await cloudinary.uploads(path, 'Images');
@@ -522,11 +592,14 @@ async function updateProduct(req, res){
 
       res.status(200).json({
         success: true,
-        message: 'Product has been updated successfully!'
+        message: 'Product has been updated successfully!',
+        data : null
       });
     } catch (error) {
       res.status(400).json({
-        error: 'Your request could not be processed. Please try again.'
+        success : false,
+      data : null,
+      message : 'Your request could not be processed. Please try again.'
       });
     }
 }
@@ -541,13 +614,16 @@ async function softDeleteProduct(req, res){
       });
       if (!productDoc) {
         return res.status(404).json({
-          message: `No product found with the id ${productId} .`
+          success : false,
+          data : null,
+          message : 'No product found with the id ${productId}.'
         });
       }
 
       res.status(200).json({
         success: true,
-        message: 'Product has been moved to trash!'
+        message: 'Product has been inactived!',
+        data : null
       });
     } catch (error) {
       res.status(400).json({
@@ -587,12 +663,15 @@ async function restoreProduct(req, res){
     });
     if (!productDoc) {
       return res.status(404).json({
-        message: `No product found with the id ${productId} .`
+        success : false,
+        data : null,
+        message: 'No product found with the id ${productId} .'
       });
     }
     res.status(200).json({
       success: true,
-      message: 'Product has been restored!'
+      message: 'Product has been actived!',
+      data : null
     });
   } catch (error) {
     res.status(400).json({
@@ -608,7 +687,7 @@ async function deleteProduct(req, res){
 
       res.status(200).json({
         success: true,
-        message: `Product has been deleted successfully!`,
+        message: 'Product has been deleted successfully!',
         product
       });
     } catch (error) {
