@@ -20,11 +20,7 @@ const OrderSchema = new Schema({
     default: 'CASH',
     enum: ['CASH', 'PAYPAL']
   },
-  address : {
-    type: Schema.Types.ObjectId,
-    ref: 'Address'
-  },
-  otherAddress : {
+ address : {
     type : String,
     default : null
   },

@@ -22,7 +22,6 @@ async function login(req, res) {
       return res.status(400) .json({ 
           success : false,
           message: 'You must enter an email address.',
-          data : null
          });
     }
 
@@ -30,7 +29,6 @@ async function login(req, res) {
       return res.status(400).json({
         success : false,
         message: 'You must enter a password.',
-        data : null 
       });
     }
 
@@ -41,7 +39,6 @@ async function login(req, res) {
         .json({ 
           success : false,
           message : 'No user found for this email address.' ,
-          data : null
         });
     }
 
@@ -51,7 +48,6 @@ async function login(req, res) {
       return res.status(400).json({
         success: false,
         message: 'Password Incorrect',
-        data : data
       });
     }
 

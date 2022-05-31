@@ -24,7 +24,7 @@ merchantRouter.put('/reject/:merchantId', auth,role.checkRole(role.ROLES.Admin),
 
 merchantRouter.post('/add', auth, role.checkRole(role.ROLES.Admin), merchantController.createMerchant);
 
-merchantRouter.get('/:id', auth, role.checkRole(role.ROLES.Admin), merchantController.getMerchantById);
+merchantRouter.get('/:id', merchantController.getMerchantById);
 
 merchantRouter.put('/:id', auth,role.checkRole(role.ROLES.Admin,role.ROLES.Merchant), merchantController.updateMerchant);
 

@@ -295,7 +295,8 @@ async function getMerchantById(req, res) {
     }
 
     res.status(200).json({
-      merchantInfo: merchantDoc
+      success : true,
+      data : merchantDoc
     });
   } catch (error) {
     res.status(400).json({

@@ -59,18 +59,21 @@ async function cancelOrder(req, res){
 async function getOrderById(req, res){
     try {
       const orderId = req.params.orderId;
-      const userId = req.user._id;
       
   
       let orderDoc = null;
 
-      orderDoc = await Order.findOne({ _id: orderId, user : userId }).populate({
-          path: 'cart',
-          select : 'total',
-          populate: {
-            path: 'products.product'
-          }
-        });
+      orderDoc = await Order.findOne({ _id: orderId }).populate({
+        path: 'cart',
+        select : 'total products',
+        populate: {
+          path: 'products.product',
+          select : 'name imageUrl'
+        },
+      }).populate({
+        path : 'user',
+        select : 'firstName lastName'
+      })
     
       if (!orderDoc) {
         return res.status(404).json({
@@ -86,11 +89,13 @@ async function getOrderById(req, res){
       // };
       res.status(200).json({
         success : true,
-        orderDoc
+        data : orderDoc
       });
     } catch (error) {
+      console.log(error);
       res.status(400).json({
-        error: 'Your request could not be processed. Please try again.'
+        success : false,
+        message: 'Your request could not be processed. Please try again.'
       });
     }
 }
@@ -99,16 +104,15 @@ async function completeOrder(req,res){
     const address = req.body.address;
     const phoneNumber = req.body.phoneNumber;
     const payment = req.body.payment;
-    const otherAddress = req.body.otherAddress;
+   
 
     const update = {
       address : address,
       phoneNumber : phoneNumber,
       payment : payment,
-      otherAddress : otherAddress,
     }
 
-    if (!address && !otherAddress) {
+    if (!address) {
       return res
         .status(400)
         .json({ error: 'You must enter an address.' });
@@ -126,7 +130,7 @@ async function completeOrder(req,res){
     res.status(200).json({
       success: true,
       message: 'Order has been completed!',
-      orderDoc
+      data : orderDoc
     });
   } catch (error){
     console.log(error);
@@ -203,12 +207,20 @@ async function getAllMerchantOrder(req, res){
   try {
     const merchantId = req.user.merchant;
 
-    const orders = await Order.find({merchant : merchantId});
+    const orders = await Order.find({merchant : merchantId}).populate({
+      path: 'cart',
+      select : 'total products',
+      populate: {
+        path: 'products.product',
+        select : 'name imageUrl'
+      }
+    });
     res.status(200).json({
       success : true,
-      orders
+      data : orders
     });
   } catch (error) {
+    console.log(error);
     res.status(400).json({
       error: 'Your request could not be processed. Please try again.'
     });
