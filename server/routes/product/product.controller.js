@@ -1,5 +1,8 @@
 const cloudinary = require('../../services/cloudinary')
 const fs = require('fs');
+const { promisify } = require('util')
+
+const unlinkAsync = promisify(fs.unlink)
 
 const Mongoose = require('mongoose');
 var jwt = require('jsonwebtoken');
@@ -489,6 +492,7 @@ async function getProductById(req, res){
         imageUrl = newPath.url;
         imageId = newPath.id;
       }
+      await unlinkAsync(req.files[0].path);
 
       const product = new Product({
         name,
@@ -525,22 +529,16 @@ async function updateProduct(req, res){
     try {
       const productId = req.params.id;
       const query = { _id: productId };
-      const newName = req.body.name;
-      const newDescription = req.body.description;
-      const newQuantity = req.body.quantity;
-      const newPrice = req.body.price;
-      const newSubcategory = req.body.subcategory
+      let update = req.body;
       const image = req.files[0];
-      //Get category
-      const subcate = await Subcategory.findOne({_id : newSubcategory});
-      const newCategory = subcate.category;
+      //Check product id is exist
       const productDoc = await Product.findById(productId);
       if (!productDoc) {
         return res.status(404).json({
           message: 'No product found.'
         });
       }
-      if (!newDescription || !newName) {
+      if (!req.body.description || !req.body.name) {
         return res
           .status(400)
           .json({success : false,
@@ -548,57 +546,48 @@ async function updateProduct(req, res){
             message : 'You must enter description & name' });
       }
 
-      if (!newQuantity) {
+      if (!req.body.quantity) {
         return res.status(400).json({ success : false,
           data : null,
           message : 'You must enter a quantity.' });
       }
 
-      if (!newPrice) {
+      if (!req.body.price) {
         return res.status(400).json({ success : false,
           data : null,
           message : 'You must enter a price.' });
       }
 
-      if (!newSubcategory) {
-        return res.status(400).json({ success : false,
-          data : null,
-          message : 'You must choose a subcategory.' });
-      }
       
       const uploader = async (path) => await cloudinary.uploads(path, 'Images');
 
-      let newImageUrl = '';
-      let newImageId = '';
+      let imageUrl = '';
+      let imageId = '';
       if (image) {
         const { path } = image;
         const newPath= await uploader(path);
-        newImageUrl = newPath.url;
-        newImageId = newPath.id;
+        imageUrl = newPath.url;
+        imageId = newPath.id;
       }
+      await unlinkAsync(req.files[0].path);
+      
+      update["imageUrl"] = imageUrl;
+      update["imageId"] = imageId;
 
-      await Product.findOneAndUpdate(query,{
-        name : newName,
-        description : newDescription,
-        quantity : newQuantity,
-        price : newPrice,
-        category : newCategory,
-        subcategory : newSubcategory,
-        imageUrl : newImageUrl,
-        imageId : newImageId
-      }, {
+      await Product.findOneAndUpdate(query,update, {
         new: true
       });
-
+      
       res.status(200).json({
         success: true,
         message: 'Product has been updated successfully!',
         data : null
       });
     } catch (error) {
+      console.log(error);
       res.status(400).json({
         success : false,
-      data : null,
+        data : null,
       message : 'Your request could not be processed. Please try again.'
       });
     }

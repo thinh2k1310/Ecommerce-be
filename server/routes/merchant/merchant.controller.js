@@ -492,15 +492,15 @@ async function getCategoriesOfMerchant(req, res) {
     const merchantUser = await User.findOne({_id : req.user._id});
     const merchant = await Merchant.findOne({_id : merchantUser.merchant});
     const ids = merchant.categories;
-    const categories = await Category.find({ '_id': { $in: ids } });
+    const categories = await Category.find({ '_id': { $in: ids } }, {id : 1, name : 1});
     const data = [];
     var getData = new Promise((resolve, reject) => {
       categories.forEach(async (category, index, array) => {
-        const subcategories = await Subcategory.find({ category: category._id });
+        const subcategories = await Subcategory.find({ category: category._id },{id : 1, name : 1});
         data.push({
-          category_id: category._id,
-          category_name: category.name,
-          subcategories: subcategories
+          _id: category._id,
+         name: category.name,
+         subcategories : subcategories
         });
         if (index === array.length - 1) resolve();
 
@@ -526,14 +526,14 @@ async function getCategoriesOfMerchant(req, res) {
     });
     getData.then(() => {
       res.status(200).json({
-        categories: data
+        success : true,
+        data : data
       });
     });
   } catch (error) {
     console.log(error);
     res.status(400).json({
       success : false,
-      data : null,
       message : 'Your request could not be processed. Please try again.'
     });
   }
@@ -559,12 +559,15 @@ async function getProductOfCategory(req, res) {
       ]
     })
     if (!products) {
-      return res.status(404).json({
-        message: 'No products found.'
+      return res.status(200).json({
+        success : true,
+        message: 'No products found.',
+        data : []
       });
     }
     res.status(200).json({
-      products
+      success : true,
+      data : products
     });
   } catch (error) {
     res.status(400).json({
@@ -594,12 +597,15 @@ async function getProductOfSubcategory(req, res) {
       ]
     })
     if (!products) {
-      return res.status(404).json({
-        message: 'No products found.'
+      return res.status(200).json({
+        success : true,
+        message: 'No products found.',
+        data : []
       });
     }
     res.status(200).json({
-      products
+      success : true,
+      data : products
     });
   } catch (error) {
     res.status(400).json({
