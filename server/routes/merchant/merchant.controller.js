@@ -493,43 +493,12 @@ async function getCategoriesOfMerchant(req, res) {
     const merchant = await Merchant.findOne({_id : merchantUser.merchant});
     const ids = merchant.categories;
     const categories = await Category.find({ '_id': { $in: ids } }, {id : 1, name : 1});
-    const data = [];
-    var getData = new Promise((resolve, reject) => {
-      categories.forEach(async (category, index, array) => {
-        const subcategories = await Subcategory.find({ category: category._id },{id : 1, name : 1});
-        data.push({
-          _id: category._id,
-         name: category.name,
-         subcategories : subcategories
-        });
-        if (index === array.length - 1) resolve();
-
-        // data.menu.categories.forEach(_category => {
-        //     _category.items = items.filter(item => item.cat_id === _category.id_category)
-        //         .map(item => ({
-        //             id_item: item.id_item,
-        //             title: item.title,
-        //         }));
-
-        //     _category.subcategories = categories.filter(__category => __category.parent_id === _category.id);
-
-        //     _category.subcategories.forEach(subcategory => {
-        //         subcategory.items = items.filter(item => item.cat_id === subcategory.id_category)
-        //             .map(item => ({
-        //                 id_item: item.id_item,
-        //                 title: item.title,
-        //             }));
-
-        //     });
-        // });
-      });
-    });
-    getData.then(() => {
-      res.status(200).json({
+    
+    res.status(200).json({
         success : true,
-        data : data
+        data : categories
       });
-    });
+    
   } catch (error) {
     console.log(error);
     res.status(400).json({
@@ -545,19 +514,31 @@ async function getProductOfCategory(req, res) {
     const merchantUser = await User.findOne({_id : req.user._id});
     console.log(merchantUser);
     const category = await Category.findById(categoryId);
-    if(!category){
+    const subcategory = await Subcategory.findById(categoryId);
+    if(!category && !subcategory){
       res.status(404).json({
         success : false,
         data : null,
         message: `Can not find category with the id: ${categoryId}.`
       });
     }
-    const products = await Product.find({
-      $and: [
-        { category: categoryId },
-        { merchant: merchantUser.merchant }
-      ]
-    })
+    let products = [];
+    if(category){
+       products = await Product.find({
+        $and: [
+          { category: categoryId },
+          { merchant: merchantUser.merchant }
+        ]
+      })
+    } else if (subcategory){
+       products = await Product.find({
+        $and: [
+          { subcategory: categoryId },
+          { merchant: merchantUser.merchant }
+        ]
+      })
+    }
+    
     if (!products) {
       return res.status(200).json({
         success : true,

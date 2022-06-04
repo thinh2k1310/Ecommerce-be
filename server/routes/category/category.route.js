@@ -18,7 +18,7 @@ categoryRouter.put('/:id', auth, role.checkRole(role.ROLES.Admin), categoryContr
 
 categoryRouter.get('/:id', auth, role.checkRole(role.ROLES.Admin), categoryController.getOneCategoryById);
 
-categoryRouter.get('/:id/subcategory', auth, role.checkRole(role.ROLES.Admin), categoryController.getAllSubcategories);
+categoryRouter.get('/:id/subcategory', categoryController.getAllSubcategories);
 
 categoryRouter.post('/:id/subcategory/add', auth, role.checkRole(role.ROLES.Admin), categoryController.createSubcategory);
 
