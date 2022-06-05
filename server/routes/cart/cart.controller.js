@@ -10,7 +10,8 @@ async function getAllMyCarts(req, res) {
         user: req.user,
         isOrdered :  false
       }
-    );
+    ).populate('products.product')
+    .populate('merchant','name');
 
     res.status(200).json({
       success : true,

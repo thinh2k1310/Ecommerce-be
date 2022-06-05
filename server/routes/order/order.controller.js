@@ -5,7 +5,6 @@ const Mongoose = require('mongoose');
 const Order = require('../../models/order');
 const Cart = require('../../models/cart');
 const Product = require('../../models/product');
-const store = require('../../helpers/store');
 const {paypal,createPayment} = require('../../services/paypal');
 
 
@@ -32,7 +31,8 @@ async function proceedToCheckout(req, res){
   } catch (error) {
       console.log(error);
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      message : 'Your request could not be processed. Please try again.'
     });
   }
 }
@@ -52,7 +52,8 @@ async function cancelOrder(req, res){
   } catch (error) {
       console.log(error);
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      message : 'Your request could not be processed. Please try again.'
     });
   }
 }
@@ -135,7 +136,8 @@ async function completeOrder(req,res){
   } catch (error){
     console.log(error);
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      message : 'Your request could not be processed. Please try again.'
     });
   }
 }
@@ -159,14 +161,15 @@ async function makePayment(req,res){
         res.status(200).json({
           success: true,
           message: 'Continue making payment with paypal...',
-          payment
+          data : payment
         });
       }
   });
   }catch (error){
     console.log(error);
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      message : 'Your request could not be processed. Please try again.'
     });
   }
 }
@@ -182,7 +185,8 @@ async function changeStatus(req,res){
   } catch (error){
     console.log(error);
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      message : 'Your request could not be processed. Please try again.'
     });
   }
 }
@@ -194,11 +198,12 @@ async function getAllUserOrder(req, res){
     const orders = await Order.find({user : userId});
     res.status(200).json({
       success : true,
-      orders
+      data : orders
     });
   } catch (error) {
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      message : 'Your request could not be processed. Please try again.'
     });
   }
 }
@@ -222,7 +227,8 @@ async function getAllMerchantOrder(req, res){
   } catch (error) {
     console.log(error);
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      message: 'Your request could not be processed. Please try again.'
     });
   }
 }

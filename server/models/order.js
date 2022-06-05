@@ -31,7 +31,7 @@ const OrderSchema = new Schema({
   status : {
     type: String,
     default: 'NOT_PROCESS',
-    enum: ['NOT_PROCESS', 'PROCESSING','DELIVERIED','RECEIVED','CANCEL']
+    enum: ['NOT_PROCESS', 'PROCESSING','DELIVERING','RECEIVED','CANCEL']
   },
   paymentStatus: {
     type: String,
