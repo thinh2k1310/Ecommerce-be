@@ -507,6 +507,39 @@ async function getCategoriesOfMerchant(req, res) {
     });
   }
 }
+async function getAllCategoriesOfMerchant(req, res) {
+  try {
+    const merchantUser = await User.findOne({_id : req.user._id});
+    const merchant = await Merchant.findOne({_id : merchantUser.merchant});
+    const ids = merchant.categories;
+    const categories = await Category.find({ '_id': { $in: ids } }, {id : 1, name : 1});
+    const data = [];
+    var getData = new Promise((resolve, reject) => {
+      categories.forEach(async (category, index, array) => {
+        const subcategories = await Subcategory.find({ category: category._id },{id : 1, name : 1});
+        data.push({
+          _id: category._id,
+         name: category.name,
+         subcategories : subcategories
+        });
+        if (index === array.length - 1) resolve();
+      });
+    });
+    getData.then(() => {
+      res.status(200).json({
+        success : true,
+        data : data
+      });
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({
+      success : false,
+      data : null,
+      message : 'Your request could not be processed. Please try again.'
+    });
+  }
+}
 //Get products of a category
 async function getProductOfCategory(req, res) {
   try {
@@ -612,6 +645,7 @@ module.exports = {
   restoreMerchant,
   deleteMerchant,
   getCategoriesOfMerchant,
+  getAllCategoriesOfMerchant,
   getProductOfCategory,
   getProductOfSubcategory
 }

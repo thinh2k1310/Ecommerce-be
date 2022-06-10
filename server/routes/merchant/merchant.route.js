@@ -9,6 +9,8 @@ const merchantRouter = express.Router();
 
 merchantRouter.get('/categories', auth,role.checkRole(role.ROLES.Merchant), merchantController.getCategoriesOfMerchant);
 
+merchantRouter.get('/categories/all', auth,role.checkRole(role.ROLES.Merchant), merchantController.getAllCategoriesOfMerchant);
+
 merchantRouter.get('/trash', auth, role.checkRole(role.ROLES.Admin), merchantController.getTrashMerchant);
 
 merchantRouter.get('/', auth, role.checkRole(role.ROLES.Admin), merchantController.getAllMerchants);
