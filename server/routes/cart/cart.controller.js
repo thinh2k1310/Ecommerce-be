@@ -129,8 +129,8 @@ async function modifyQuantity(req, res) {
   try {
     const productId =  req.params.productId;
     const query = { _id: req.params.cartId };
-    const previousQuantity = req.body.previousQuantity;
-    const currentQuantity = req.body.currentQuantity;
+    const previousQuantity = Number(req.body.previousQuantity);
+    const nextQuantity = Number(req.body.nextQuantity);
     let cart = await Cart.findById(req.params.cartId);
     let element = -1;
     cart.products.forEach((item, index) => {
@@ -138,14 +138,10 @@ async function modifyQuantity(req, res) {
         element = index;
       }
     });
+    console.log(typeof(previousQuantity));
     const price = cart.products[element].purchasePrice;
-    await Cart.updateOne(
-      query,
-      { $set: { "products.$[element].quantity": currentQuantity } },
-      { arrayFilters: [{ "element._id": { $eq: productId } }] }
-    );
     const check = await Product.findById(cart.products[element].product._id);
-    if ((check.quantity+previousQuantity)-currentQuantity < 0){
+    if ((check.quantity+previousQuantity)-nextQuantity < 0){
       res.status(400).json({
         success : false,
         message : `Only ${check.quantity + previousQuantity} left in stock. Please take less!`,
@@ -153,17 +149,20 @@ async function modifyQuantity(req, res) {
       });
       return;
     }
-    decreaseInventory([cart.products[element]],previousQuantity,currentQuantity);
     await Cart.updateOne(
       query,
-      {$set : { "products.$[element].totalPrice": currentQuantity*price },
-       $inc : { total : (currentQuantity-previousQuantity)*price }},
+      { $set: { "products.$[element].quantity": nextQuantity } },
+      { arrayFilters: [{ "element._id": { $eq: productId } }] }
+    );
+    decreaseInventory([cart.products[element]],previousQuantity,nextQuantity);
+    await Cart.updateOne(
+      query,
+      {$set : { "products.$[element].totalPrice": nextQuantity*price },
+       $inc : { total : (nextQuantity-previousQuantity)*price }},
       { arrayFilters: [{ "element._id": { $eq: productId } }] }
     );
     res.status(200).json({
-      success: true,
-      message : "",
-      data : ""
+      success: true
     });
   } catch (error) {
     console.log(error);
@@ -228,13 +227,13 @@ async function deleteProductFromCart(req, res) {
 }
 
 
-const decreaseInventory = (products,previousQuantity,currentQuantity) => {
+const decreaseInventory = (products,previousQuantity,nextQuantity) => {
   let bulkOptions = products.map(item => {
    if(previousQuantity != null){
     return {
       updateOne: {
         filter: { _id: item.product },
-        update: { $inc: { quantity: (previousQuantity-currentQuantity) } }
+        update: { $inc: { quantity: (previousQuantity-nextQuantity) } }
       }
     };
    }else{
