@@ -11,8 +11,6 @@ merchantRouter.get('/categories', auth,role.checkRole(role.ROLES.Merchant), merc
 
 merchantRouter.get('/categories/all', auth,role.checkRole(role.ROLES.Merchant), merchantController.getAllCategoriesOfMerchant);
 
-merchantRouter.get('/trash', auth, role.checkRole(role.ROLES.Admin), merchantController.getTrashMerchant);
-
 merchantRouter.get('/', auth, role.checkRole(role.ROLES.Admin), merchantController.getAllMerchants);
 
 merchantRouter.get('/requests',auth, role.checkRole(role.ROLES.Admin), merchantController.getAllMerchantRequests);
@@ -38,6 +36,5 @@ merchantRouter.put('/delete/:id', auth,role.checkRole(role.ROLES.Admin), merchan
 
 merchantRouter.put('/restore/:id', auth,role.checkRole(role.ROLES.Admin), merchantController.restoreMerchant);
 
-merchantRouter.delete('/:id', auth, role.checkRole(role.ROLES.Admin), merchantController.deleteMerchant);
 
 module.exports = merchantRouter;
