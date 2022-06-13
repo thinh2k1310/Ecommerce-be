@@ -1,6 +1,6 @@
 const express = require('express');
 
-const wishlistController = require('./wishlish.controller');
+const wishlistController = require('./wishlist.controller');
 
 // Bring in Models & Helpers
 const auth = require('../../middleware/auth');
