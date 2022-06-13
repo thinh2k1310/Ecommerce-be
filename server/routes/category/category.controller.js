@@ -96,11 +96,12 @@ async function getAllCategoriesForAdmin(req, res){
     const categories = await Category.find({});
     const data = [];
     await Promise.all(categories.map(async (category,index) => {
-        const subcategories = await Subcategory.find({category : category._id}, {id : 1, name : 1,description : 1});
+        const subcategories = await Subcategory.find({category : category._id}, {id : 1, name : 1, slug : 1,description : 1});
         console.log(` => ${index}`);
         data.push({
             _id: category._id,
            name: category.name,
+           slug : category.slug,
            description : category.description,
            subcategories : subcategories
           });
