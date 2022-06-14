@@ -91,13 +91,13 @@ async function filterProduct(req, res){
       max,
       min,
       category,
-      subcategory,
+     
       pageNumber: page = 1
     } = req.body;
 
     const pageSize = 8;
     const categoryFilter = category ? { category } : {};
-    const subcategoryFilter = subcategory ? { subcategory } : {};
+    
     const merchantFilter = merchant ? { merchant } : {};
     const priceFilter = min && max ? { price: { $gte: min, $lte: max } } : {};
     const ratingFilter = rating
@@ -168,9 +168,9 @@ async function filterProduct(req, res){
 
     const userDoc = await checkAuth(req);
     let productsCategory = null;
-   if(category != null || subcategory != null){
+    if(category != null ){
     const categoryDoc = await Category.findOne({ slug: categoryFilter.category, isActive: true });
-    const subcategoryDoc = await Subcategory.findOne({ slug: subcategoryFilter.subcategory, isActive: true });
+    const subcategoryDoc = await Subcategory.findOne({ slug: categoryFilter.category, isActive: true });
     if (categoryDoc){
       productsCategory = await Product.find({category : categoryDoc._id}, '_id');
     } else if (subcategoryDoc){
