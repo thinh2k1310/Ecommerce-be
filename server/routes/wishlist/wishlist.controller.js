@@ -1,5 +1,3 @@
-// Bring in Models & Helpers
-const Wishlist = require('../../models/wishlist');
 const WishlistService = require('../../services/wishlist.service');
 
 const service = new WishlistService();

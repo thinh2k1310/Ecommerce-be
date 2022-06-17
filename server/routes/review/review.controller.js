@@ -1,8 +1,5 @@
-// Bring in Models & Helpers
-const Review = require('../../models/review');
-const Product = require('../../models/product');
 const ReviewService = require('../../services/review.service');
-const review = require('../../models/review');
+
 
 const service = new ReviewService();
 
