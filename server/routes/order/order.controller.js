@@ -78,6 +78,7 @@ async function getOrderById(req, res){
     
       if (!orderDoc) {
         return res.status(404).json({
+          success : false,
           message: `Cannot find order with the id: ${orderId}.`
         });
       }
@@ -195,7 +196,14 @@ async function getAllUserOrder(req, res){
   try {
     const userId = req.user._id;
   
-    const orders = await Order.find({user : userId});
+    const orders = await Order.find({user : userId}).populate({
+      path: 'cart',
+      select : 'total products',
+      populate: {
+        path: 'products.product',
+        select : 'name imageUrl'
+      }
+    });
     res.status(200).json({
       success : true,
       data : orders
