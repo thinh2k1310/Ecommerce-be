@@ -8,11 +8,13 @@ const Product = require('../../models/product');
 const {paypal,createPayment} = require('../../services/paypal');
 
 
-async function proceedToCheckout(req, res){
+async function proceedToOrder(req, res){
   try {
     const cart = req.body.cart;
     const merchant = req.body.merchant;
     const user = req.user._id;
+
+    //const cartDetail = await Cart.findById(cart); 
 
     const order = new Order({
       cart,
@@ -22,12 +24,28 @@ async function proceedToCheckout(req, res){
 
     const orderDoc = await order.save();
     await Cart.findByIdAndUpdate(cart, {isOrdered : true})
-
-    res.status(200).json({
-      success: true,
-      message: `Your order has been placed successfully!`,
-      order: orderDoc
-    });
+  //   console.log(cartDetail.total);
+  //   const createPaymentJson = createPayment(cartDetail.total);
+  //   paypal.payment.create(createPaymentJson, function (error, payment) {
+  //     if (error) {
+  //       res.status(400).json({
+  //         success : false,
+  //         message : error
+  //       });
+  //     } else {
+  //       res.status(200).json({
+  //         success: true,
+  //         data : {
+  //           order : orderDoc,
+  //           payment : payment
+  //         }
+  //       });
+  //     }
+  // });
+  res.status(200).json({
+    success: true,
+    data : orderDoc
+  });
   } catch (error) {
       console.log(error);
     res.status(400).json({
@@ -106,12 +124,11 @@ async function completeOrder(req,res){
     const address = req.body.address;
     const phoneNumber = req.body.phoneNumber;
     const payment = req.body.payment;
-   
 
     const update = {
       address : address,
       phoneNumber : phoneNumber,
-      payment : payment,
+      payment : payment
     }
 
     if (!address) {
@@ -124,8 +141,39 @@ async function completeOrder(req,res){
       return res.status(400).json({ error: 'You must enter a phone number.' });
     }
 
-    if (!payment) {
-      return res.status(400).json({ error: 'You must choose a payment.' });
+    const orderDoc = await Order.findOneAndUpdate({_id : req.params.orderId}, update);
+    res.status(200).json({
+      success: true,
+      message: 'Order has been completed!',
+      data : orderDoc
+    });
+  } catch (error){
+    console.log(error);
+    res.status(400).json({
+      success : false,
+      message : 'Your request could not be processed. Please try again.'
+    });
+  }
+}
+async function completeOrderWithPaypal(req,res){
+  try{
+    const address = req.body.address;
+    const phoneNumber = req.body.phoneNumber;
+
+    const update = {
+      address : address,
+      phoneNumber : phoneNumber,
+      payment : 'PAYPAL'
+    }
+
+    if (!address) {
+      return res
+        .status(400)
+        .json({ error: 'You must enter an address.' });
+    }
+
+    if (!phoneNumber) {
+      return res.status(400).json({ error: 'You must enter a phone number.' });
     }
 
     const orderDoc = await Order.findOneAndUpdate({_id : req.params.orderId}, update);
@@ -177,8 +225,8 @@ async function makePayment(req,res){
 async function changeStatus(req,res){
   try{
     const update = req.body;
-
-    const order = await Order.findOneAndUpdate({_id : req.params.orderId}, update);
+    
+    await Order.findOneAndUpdate({_id : req.params.orderId}, update);
     res.status(200).json({
       success: true,
       message: 'Order\'s status has been modified!',
@@ -243,9 +291,10 @@ async function getAllMerchantOrder(req, res){
 
 
 module.exports = {
-    proceedToCheckout,
+    proceedToOrder,
     getOrderById,
     completeOrder,
+    completeOrderWithPaypal,
     makePayment,
     cancelOrder,
     changeStatus,

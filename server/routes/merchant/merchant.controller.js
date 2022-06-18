@@ -283,10 +283,13 @@ async function getAllMerchants(req, res) {
 async function getMerchantById(req, res) {
   try {
     const merchantId = req.params.id;
+    const category = req.params.category;
 
-    const merchantDoc = await Merchant.findOne({ _id: merchantId });
-
-    if (!merchantDoc) {
+    const merchant = await Merchant.findOne({ _id: merchantId }).populate({
+      path: 'categories',
+      select : 'name slug image'
+    });
+    if (!merchant) {
       res.status(404).json({
         success : false,
         data : null,
@@ -294,14 +297,66 @@ async function getMerchantById(req, res) {
       });
     }
 
-    res.status(200).json({
-      success : true,
-      data : merchantDoc
-    });
+    if(category == 'all'){
+      const products = await Product.find({
+        merchant: merchant._id,
+        isActive: true
+      })
+  
+      res.status(200).json({
+        success : true,
+        data : {
+        merchant,
+        products: products.reverse().slice(0, 8),
+        page: 1,
+        pages: products.length > 0 ? Math.ceil(products.length / 8) : 0,
+        totalProducts: products.length
+        }
+      });
+    }else {
+      const categoryDoc = await Category.findOne({slug : category});
+  
+      const subcategoryDoc = await Subcategory.findOne({slug : category});
+      if (categoryDoc != null){
+        const products = await Product.find({
+          merchant: merchant._id,
+          category : categoryDoc._id,
+          isActive: true
+        })
+       
+        res.status(200).json({
+          success : true,
+          data : {
+          merchant,
+          products: products.reverse().slice(0, 8),
+          page: 1,
+          pages: products.length > 0 ? Math.ceil(products.length / 8) : 0,
+          totalProducts: products.length
+          }
+        });
+      }else if (subcategoryDoc != null ){
+        const products = await Product.find({
+          merchant: merchant._id,
+          subcategory : subcategoryDoc._id,
+          isActive: true
+        })
+  
+        res.status(200).json({
+          success : true,
+          data : {
+          merchant,
+          products: products.reverse().slice(0, 8),
+          page: 1,
+          pages: products.length > 0 ? Math.ceil(products.length / 8) : 0,
+          totalProducts: products.length
+          }
+        });
+      } 
+    }
   } catch (error) {
+    console.log(error);
     res.status(400).json({
       success : false,
-      data : null,
       message : 'Your request could not be processed. Please try again.'
     });
   }
@@ -629,6 +684,133 @@ async function getProductOfSubcategory(req, res) {
     });
   }
 }
+async function getInfoOfMerchant(req, res) {
+  try {
+    const merchantId = req.params.id;
+    const merchant = await Merchant.findOne({_id : merchantId}).populate({
+      path: 'categories',
+      select : '_id name slug image'
+    });
+    const ids = [];
+    for (var category in merchant.categories) {
+      ids.push(category._id)
+    }
+    const categories = await Category.find({ '_id': { $in: ids } }, {id : 1, name : 1});
+    const data = [];
+    var getData = new Promise((resolve, reject) => {
+      categories.forEach(async (category, index, array) => {
+        const subcategories = await Subcategory.find({ category: category._id },{id : 1, name : 1});
+        data.push({
+          _id: category._id,
+         name: category.name,
+         subcategories : subcategories
+        });
+        if (index === array.length - 1) resolve();
+      });
+    });
+    getData.then(() => {
+      res.status(200).json({
+        success : true,
+        data : {
+          merchant,
+          data
+        }
+      });
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({
+      success : false,
+      data : null,
+      message : 'Your request could not be processed. Please try again.'
+    });
+  }
+}
+async function getProductsOfMerchant(req, res){
+  try {
+    const slug = req.params.slug;
+    const category = req.params.category
+
+    const merchant = await Merchant.findOne({ slug, isActive: true }).populate({
+      path: 'category',
+      select : 'name slug image'
+    });
+
+    if (!merchant) {
+      return res.status(404).json({
+        success : false,
+      data : null,
+      message : "Cannot find merchant with the name: ${slug}."
+      });
+    }
+
+    if(category == null){
+      const products = await Product.find({
+       // merchant: merchant._id,
+        //isActive: true
+      })
+
+      res.status(200).json({
+        success : true,
+        message : "",
+        data : {
+        products: products.reverse().slice(0, 8),
+        page: 1,
+        pages: products.length > 0 ? Math.ceil(products.length / 8) : 0,
+        totalProducts: products.length
+        }
+      });
+    }else {
+      const categoryDoc = await Category.find({slug : category});
+      const subcategoryDoc = await Subcategory.find({slug : category});
+      if (categoryDoc){
+        const products = await Product.find({
+          merchant: merchant._id,
+          category : categoryDoc._id,
+          isActive: true
+        })
+  
+        res.status(200).json({
+          success : true,
+          message : "",
+          data : {
+          products: products.reverse().slice(0, 8),
+          page: 1,
+          pages: products.length > 0 ? Math.ceil(products.length / 8) : 0,
+          totalProducts: products.length
+          }
+        });
+      }else if (subcategoryDoc){
+        const products = await Product.find({
+          merchant: merchant._id,
+          subcategory : subcategoryDoc._id,
+          isActive: true
+        })
+  
+        res.status(200).json({
+          success : true,
+          message : "",
+          data : {
+          products: products.reverse().slice(0, 8),
+          page: 1,
+          pages: products.length > 0 ? Math.ceil(products.length / 8) : 0,
+          totalProducts: products.length
+          }
+        });
+      }
+      
+    }
+    
+      
+  } catch (error) {
+    res.status(400).json({
+      success : false,
+      data : null,
+      message : 'Your request could not be processed. Please try again.'
+    });
+  }
+}
+
 
 
 module.exports = {
@@ -647,5 +829,6 @@ module.exports = {
   getCategoriesOfMerchant,
   getAllCategoriesOfMerchant,
   getProductOfCategory,
-  getProductOfSubcategory
+  getProductOfSubcategory,
+  getInfoOfMerchant
 }

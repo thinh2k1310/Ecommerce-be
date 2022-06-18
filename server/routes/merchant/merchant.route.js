@@ -7,6 +7,8 @@ const merchantController = require('./merchant.controller');
 const role = require('../../middleware/role');
 const merchantRouter = express.Router();
 
+
+
 merchantRouter.get('/categories', auth,role.checkRole(role.ROLES.Merchant), merchantController.getCategoriesOfMerchant);
 
 merchantRouter.get('/categories/all', auth,role.checkRole(role.ROLES.Merchant), merchantController.getAllCategoriesOfMerchant);
@@ -24,7 +26,7 @@ merchantRouter.put('/reject/:merchantId', auth,role.checkRole(role.ROLES.Admin),
 
 merchantRouter.post('/add', auth, role.checkRole(role.ROLES.Admin), merchantController.createMerchant);
 
-merchantRouter.get('/:id', merchantController.getMerchantById);
+merchantRouter.get('/:id/:category', merchantController.getMerchantById);
 
 merchantRouter.put('/:id', auth,role.checkRole(role.ROLES.Admin,role.ROLES.Merchant), merchantController.updateMerchant);
 

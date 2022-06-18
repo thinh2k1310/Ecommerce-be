@@ -177,7 +177,7 @@ async function modifyQuantity(req, res) {
 async function deleteCart(req, res) {
   try {
     let cart = await Cart.findById(req.params.cartId);
-    increaseQuantity(cart.products);
+    increaseInventory(cart.products);
     await Cart.deleteOne({ _id: req.params.cartId });
     
     res.status(200).json({
@@ -186,6 +186,7 @@ async function deleteCart(req, res) {
       data : null
     });
   } catch (error) {
+    console.log(error);
     res.status(400).json({
       success : false,
       message : 'Your request could not be processed. Please try again.',

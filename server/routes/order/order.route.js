@@ -12,11 +12,13 @@ orderRouter.get('/merchant',auth,role.checkRole(role.ROLES.Merchant),orderContro
 
 orderRouter.get('/',auth,orderController.getAllUserOrder);
 
-orderRouter.post('/add', auth, orderController.proceedToCheckout);
+orderRouter.post('/add', auth, orderController.proceedToOrder);
 
 orderRouter.get('/:orderId',auth, orderController.getOrderById);
 
 orderRouter.delete('/:orderId/cancel',auth, orderController.cancelOrder);
+
+orderRouter.put('/:orderId/paypal', auth, orderController.completeOrderWithPaypal);
 
 orderRouter.put('/:orderId', auth, orderController.completeOrder);
 

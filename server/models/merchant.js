@@ -33,6 +33,9 @@ const MerchantSchema = new Schema({
       ref: 'Category'
   }
 ],
+  avatar : {
+    type : String
+  },
   business: {
     type: String,
     trim: true
