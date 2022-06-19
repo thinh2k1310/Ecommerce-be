@@ -449,10 +449,12 @@ async function getProductById(req, res){
       const description = req.body.description;
       const quantity = req.body.quantity;
       const price = req.body.price;
-      const category = req.body.category
       const subcategory = req.body.subcategory
       const image = req.files[0];
       const merchant = req.user.merchant
+
+      const subcate = await Subcategory.findById(subcategory);
+      const category = subcate.category;
       
       if (!description || !name) {
         return res
@@ -474,10 +476,10 @@ async function getProductById(req, res){
           message : 'You must enter a price.' });
       }
 
-      if (!category || !subcategory) {
+      if (!subcategory) {
         return res.status(400).json({ success : false,
           data : null,
-          message : 'You must choose category and subcategory.' });
+          message : 'You must choose subcategory.' });
       }
 
       const uploader = async (path) => await cloudinary.uploads(path, 'Images');

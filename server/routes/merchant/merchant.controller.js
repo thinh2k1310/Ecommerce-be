@@ -314,9 +314,9 @@ async function getMerchantById(req, res) {
         }
       });
     }else {
-      const categoryDoc = await Category.findOne({slug : category});
+      const categoryDoc = await Category.findOne({_id : category});
   
-      const subcategoryDoc = await Subcategory.findOne({slug : category});
+      const subcategoryDoc = await Subcategory.findOne({_id : category});
       if (categoryDoc != null){
         const products = await Product.find({
           merchant: merchant._id,
