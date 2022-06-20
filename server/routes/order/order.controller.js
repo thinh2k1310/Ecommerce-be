@@ -54,6 +54,52 @@ async function proceedToOrder(req, res){
     });
   }
 }
+async function proceedToOrderMobile(req, res){
+  try {
+    const cart = req.body.cart;
+    const merchant = req.body.merchant;
+    const user = req.user._id;
+
+    const cartDetail = await Cart.findById(cart); 
+
+    const order = new Order({
+      cart,
+      user,
+      merchant
+    });
+
+    const orderDoc = await order.save();
+    await Cart.findByIdAndUpdate(cart, {isOrdered : true})
+  //   console.log(cartDetail.total);
+    const createPaymentJson = createPayment(cartDetail.total);
+    paypal.payment.create(createPaymentJson, function (error, payment) {
+      if (error) {
+        res.status(400).json({
+          success : false,
+          message : error
+        });
+      } else {
+        res.status(200).json({
+          success: true,
+          data : {
+            order : orderDoc,
+            payment : payment
+          }
+        });
+      }
+  });
+  res.status(200).json({
+    success: true,
+    data : orderDoc
+  });
+  } catch (error) {
+      console.log(error);
+    res.status(400).json({
+      success : false,
+      message : 'Your request could not be processed. Please try again.'
+    });
+  }
+}
 async function cancelOrder(req, res){
   try {
     const orderId = req.params.orderId;
@@ -292,6 +338,7 @@ async function getAllMerchantOrder(req, res){
 
 module.exports = {
     proceedToOrder,
+    proceedToOrderMobile,
     getOrderById,
     completeOrder,
     completeOrderWithPaypal,
