@@ -11,7 +11,7 @@ reviewRouter.post('/add', auth, reviewController.addReview);
 
 reviewRouter.get('/', auth, reviewController.getMyReviews);
 
-reviewRouter.get('/:slug', reviewController.getReviewsOfProduct);
+reviewRouter.get('/:id', reviewController.getReviewsOfProduct);
 
 reviewRouter.put('/:id', auth, reviewController.updateReview);
 

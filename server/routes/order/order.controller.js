@@ -70,7 +70,7 @@ async function proceedToOrderMobile(req, res){
 
     const orderDoc = await order.save();
     await Cart.findByIdAndUpdate(cart, {isOrdered : true})
-  //   console.log(cartDetail.total);
+    console.log(cartDetail.total);
     const createPaymentJson = createPayment(cartDetail.total);
     paypal.payment.create(createPaymentJson, function (error, payment) {
       if (error) {
@@ -87,10 +87,6 @@ async function proceedToOrderMobile(req, res){
           }
         });
       }
-  });
-  res.status(200).json({
-    success: true,
-    data : orderDoc
   });
   } catch (error) {
       console.log(error);

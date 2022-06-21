@@ -2,8 +2,17 @@
 const Review = require('../../models/review');
 const Product = require('../../models/product');
 
-function addReview(req, res){
+async function addReview(req, res){
   const user = req.user;
+
+  const check = await Review.find({user : user});
+
+  if (check != null) {
+    res.status(200).json({
+      success: true,
+      message: `You already review this product. You can only review once at each product.`,
+    });
+  }
 
   const review = new Review(Object.assign(req.body, { user: user._id }));
 
@@ -17,7 +26,7 @@ function addReview(req, res){
     res.status(200).json({
       success: true,
       message: `Your review has been added successfully!`,
-      review: data
+      data : review
     });
   });
 }
@@ -32,7 +41,8 @@ async function getMyReviews(req, res){
       .sort('-created');
 
     res.status(200).json({
-      reviews
+      success : true,
+      data : reviews
     });
   } catch (error) {
     res.status(400).json({
@@ -43,7 +53,7 @@ async function getMyReviews(req, res){
 
 async function getReviewsOfProduct(req, res){
   try {
-    const productDoc = await Product.findOne({ slug: req.params.slug });
+    const productDoc = await Product.findOne({ _id : req.params.id });
 
     if (!productDoc || (productDoc && productDoc?.merchant?.isActive === false)) {
       return res.status(404).json({
@@ -61,7 +71,8 @@ async function getReviewsOfProduct(req, res){
       .sort('-created');
 
     res.status(200).json({
-      reviews
+      success : true,
+      data : reviews
     });
   } catch (error) {
     res.status(400).json({
@@ -82,11 +93,12 @@ async function updateReview(req, res){
 
     res.status(200).json({
       success: true,
-      message: 'review has been updated successfully!'
+      message: 'Review has been updated successfully!'
     });
   } catch (error) {
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      success : false,
+      message: 'Your request could not be processed. Please try again.'
     });
   }
 }
@@ -104,7 +116,7 @@ async function deleteReview(req, res){
       res.status(200).json({
         success: true,
         message: `Review has been deleted successfully!`,
-        deletedReview
+        data : deletedReview
       });
     }
     else{

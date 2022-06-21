@@ -14,7 +14,7 @@ orderRouter.get('/',auth,orderController.getAllUserOrder);
 
 orderRouter.post('/add', auth, orderController.proceedToOrder);
 
-orderRouter.post('/proceed', auth, orderController.proceedToOrder);
+orderRouter.post('/proceed', auth, orderController.proceedToOrderMobile);
 
 orderRouter.get('/:orderId',auth, orderController.getOrderById);
 
