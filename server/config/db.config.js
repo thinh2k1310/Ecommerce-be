@@ -18,5 +18,104 @@ const connectDatabase = async () => {
     }
 }
 
+data = {
+    users :[
+        {
+            email : '',
+            firstName : '',
+            lastName : '',
+            password : '',
+            provider : '',
+            role : ''
+        },
+        {
+            email : '',
+            firstName : '',
+            lastName : '',
+            password : '',
+            provider : '',
+            role : ''
+        },
+        {
+            email : '',
+            firstName : '',
+            lastName : '',
+            password : '',
+            provider : '',
+            role : ''
+        },
+        {
+            email : '',
+            firstName : '',
+            lastName : '',
+            password : '',
+            provider : '',
+            role : ''
+        },
+        {
+            email : '',
+            firstName : '',
+            lastName : '',
+            password : '',
+            provider : '',
+            role : ''
+        },
+        {
+            email : '',
+            firstName : '',
+            lastName : '',
+            password : '',
+            provider : '',
+            role : ''
+        },
+        {
+            email : '',
+            firstName : '',
+            lastName : '',
+            password : '',
+            provider : '',
+            role : ''
+        },
+        {
+            email : '',
+            firstName : '',
+            lastName : '',
+            password : '',
+            provider : '',
+            role : ''
+        },
+        {
+            email : '',
+            firstName : '',
+            lastName : '',
+            password : '',
+            provider : '',
+            role : ''
+        },
+        {
+            email : '',
+            firstName : '',
+            lastName : '',
+            password : '',
+            provider : '',
+            role : ''
+        },
+        {
+            email : '',
+            firstName : '',
+            lastName : '',
+            password : '',
+            provider : '',
+            role : ''
+        }
+
+    ],
+    categories : [
+
+    ],
+    subcategories : [
+
+    ]
+}
 
 module.exports = connectDatabase;

@@ -28,6 +28,12 @@ orderRouter.post('/:orderId/pay', auth, orderController.makePayment);
 
 orderRouter.put('/:orderId/status', auth, orderController.changeStatus);
 
+orderRouter.get('/:orderId/success', orderController.paySuccess);
+
+orderRouter.get('/:orderId/fail', orderController.payFail);
+
+
+
 
 
 module.exports = orderRouter;

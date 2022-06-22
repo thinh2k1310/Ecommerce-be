@@ -6,6 +6,7 @@ const Order = require('../../models/order');
 const Cart = require('../../models/cart');
 const Product = require('../../models/product');
 const {paypal,createPayment} = require('../../services/paypal');
+const order = require('../../models/order');
 
 
 async function proceedToOrder(req, res){
@@ -330,7 +331,37 @@ async function getAllMerchantOrder(req, res){
     });
   }
 }
+async function paySuccess(req,res){
+  try {
+    const orderId = req.params.orderId;
+    await Order.findOneAndUpdate({_id : orderId}, {paymentStatus : 'PAID', payment : 'PAYPAL'});
+    res.status(200).json({
+      message : `Your order ${orderId} has been paid successfully!`
+    });
 
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({
+      success : false,
+      message: 'Your request could not be processed. Please try again.'
+    });
+  }
+}
+async function payFail(req,res){
+  try {
+    const orderId = req.params.orderId;
+    await Order.findOneAndUpdate({_id : orderId}, {paymentStatus : 'NOT_PAID', payment : 'CASH'});
+    res.status(200).json({
+      message : `Error when pay your order ${orderId} with Paypal! Please pay in cash!`
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({
+      success : false,
+      message: 'Your request could not be processed. Please try again.'
+    });
+  }
+}
 
 module.exports = {
     proceedToOrder,
@@ -342,5 +373,7 @@ module.exports = {
     cancelOrder,
     changeStatus,
     getAllUserOrder,
-    getAllMerchantOrder
+    getAllMerchantOrder,
+    paySuccess,
+    payFail
 }
