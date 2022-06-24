@@ -563,23 +563,31 @@ async function getAllCategoriesOfMerchant(req, res) {
     const ids = merchant.categories;
     const categories = await Category.find({ '_id': { $in: ids } }, {id : 1, name : 1});
     const data = [];
-    var getData = new Promise((resolve, reject) => {
-      categories.forEach(async (category, index, array) => {
-        const subcategories = await Subcategory.find({ category: category._id },{id : 1, name : 1});
-        data.push({
+    await Promise.all(categories.map(async (category,index) => {
+      const subcategories = await Subcategory.find({category : category._id}, {id : 1, name : 1});
+      data.push({
           _id: category._id,
          name: category.name,
          subcategories : subcategories
         });
-        if (index === array.length - 1) resolve();
-      });
-    });
-    getData.then(() => {
-      res.status(200).json({
-        success : true,
-        data : data
-      });
-    });
+}));
+data.sort((a, b) => {
+  let fa = a.name.toLowerCase(),
+      fb = b.name.toLowerCase();
+
+  if (fa < fb) {
+      return -1;
+  }
+  if (fa > fb) {
+      return 1;
+  }
+  return 0;
+});
+res.status(200).json({
+  success : true,
+  message : "",
+  data : data
+});
   } catch (error) {
     console.log(error);
     res.status(400).json({
