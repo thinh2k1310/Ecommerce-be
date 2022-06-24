@@ -205,67 +205,14 @@ async function filterProduct(req, res){
 
     let products = null;
     let productsCount = 0;
-
-    if (userDoc) {
-      productsCount = await Product.aggregate(
-        [
-          {
-            $lookup: {
-              from: 'wishlists',
-              let: { product: '$_id' },
-              pipeline: [
-                {
-                  $match: {
-                    $and: [
-                      { $expr: { $eq: ['$$product', '$product'] } },
-                      { user: new Mongoose.Types.ObjectId(userDoc.id) }
-                    ]
-                  }
-                }
-              ],
-              as: 'isLiked'
-            }
-          },
-          {
-            $addFields: {
-              isLiked: { $arrayElemAt: ['$isLiked.isLiked', 0] }
-            }
-          }
-        ].concat(basicQuery)
-      );
+    if (page == -1) {
+      productsCount = await Product.aggregate(basicQuery);
       const paginateQuery = [
         { $sort: sortOrder },
         { $skip: pageSize * (productsCount.length > 8 ? page - 1 : 0) },
         { $limit: pageSize }
       ];
-      products = await Product.aggregate(
-        [
-          {
-            $lookup: {
-              from: 'wishlists',
-              let: { product: '$_id' },
-              pipeline: [
-                {
-                  $match: {
-                    $and: [
-                      { $expr: { $eq: ['$$product', '$product'] } },
-                      { user: new Mongoose.Types.ObjectId(userDoc.id) }
-                    ]
-                  }
-                }
-              ],
-              as: 'isLiked'
-            }
-          },
-          {
-            $addFields: {
-              isLiked: { $arrayElemAt: ['$isLiked.isLiked', 0] }
-            }
-          }
-        ]
-          .concat(basicQuery)
-          .concat(paginateQuery)
-      );
+      products = await Product.aggregate(basicQuery);
     } else {
       productsCount = await Product.aggregate(basicQuery);
       const paginateQuery = [

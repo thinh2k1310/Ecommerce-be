@@ -307,9 +307,7 @@ async function getMerchantById(req, res) {
         success : true,
         data : {
         merchant,
-        products: products.reverse().slice(0, 8),
-        page: 1,
-        pages: products.length > 0 ? Math.ceil(products.length / 8) : 0,
+        products: products,
         totalProducts: products.length
         }
       });
@@ -328,9 +326,7 @@ async function getMerchantById(req, res) {
           success : true,
           data : {
           merchant,
-          products: products.reverse().slice(0, 8),
-          page: 1,
-          pages: products.length > 0 ? Math.ceil(products.length / 8) : 0,
+          products: products,
           totalProducts: products.length
           }
         });
@@ -345,9 +341,7 @@ async function getMerchantById(req, res) {
           success : true,
           data : {
           merchant,
-          products: products.reverse().slice(0, 8),
-          page: 1,
-          pages: products.length > 0 ? Math.ceil(products.length / 8) : 0,
+          products: products,
           totalProducts: products.length
           }
         });

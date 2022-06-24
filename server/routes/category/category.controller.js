@@ -118,6 +118,7 @@ async function getAllCategoriesForAdmin(req, res){
     }
     return 0;
 });
+  data.push(data.splice(3, 1)[0]);
   res.status(200).json({
     success : true,
     message : "",
