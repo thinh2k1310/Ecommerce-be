@@ -10,7 +10,7 @@ paypal.configure({
     'client_secret': secret
 });
 function createPayment(total){
-    var finalToTal = parseFloat(Number((total / 23150).toFixed(2)));
+    var finalToTal = parseFloat(Number(total).toFixed(2));
     return {
     "intent": "sale",
     "payer": {

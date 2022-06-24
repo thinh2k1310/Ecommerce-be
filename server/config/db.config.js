@@ -1,7 +1,8 @@
 const mongoose = require ('mongoose');
 const bcrypt = require('bcryptjs');
 const fs = require('fs');
-
+//const Product = require('../models/product');
+const User = require('../models/user');
 
 const connectDatabase = async () => {
     try {
@@ -9,6 +10,10 @@ const connectDatabase = async () => {
             useNewUrlParser: true,
             useUnifiedTopology: true,
         });  
+        //await Product.insertMany(data.products);
+        // const salt = await bcrypt.genSalt(10);
+        // const hash = await bcrypt.hash('123456', salt);
+        // await User.updateMany({},{password:hash});
 
 
         console.log("Connected to the database")
@@ -18,104 +23,8 @@ const connectDatabase = async () => {
     }
 }
 
-data = {
-    users :[
-        {
-            email : '',
-            firstName : '',
-            lastName : '',
-            password : '',
-            provider : '',
-            role : ''
-        },
-        {
-            email : '',
-            firstName : '',
-            lastName : '',
-            password : '',
-            provider : '',
-            role : ''
-        },
-        {
-            email : '',
-            firstName : '',
-            lastName : '',
-            password : '',
-            provider : '',
-            role : ''
-        },
-        {
-            email : '',
-            firstName : '',
-            lastName : '',
-            password : '',
-            provider : '',
-            role : ''
-        },
-        {
-            email : '',
-            firstName : '',
-            lastName : '',
-            password : '',
-            provider : '',
-            role : ''
-        },
-        {
-            email : '',
-            firstName : '',
-            lastName : '',
-            password : '',
-            provider : '',
-            role : ''
-        },
-        {
-            email : '',
-            firstName : '',
-            lastName : '',
-            password : '',
-            provider : '',
-            role : ''
-        },
-        {
-            email : '',
-            firstName : '',
-            lastName : '',
-            password : '',
-            provider : '',
-            role : ''
-        },
-        {
-            email : '',
-            firstName : '',
-            lastName : '',
-            password : '',
-            provider : '',
-            role : ''
-        },
-        {
-            email : '',
-            firstName : '',
-            lastName : '',
-            password : '',
-            provider : '',
-            role : ''
-        },
-        {
-            email : '',
-            firstName : '',
-            lastName : '',
-            password : '',
-            provider : '',
-            role : ''
-        }
 
-    ],
-    categories : [
 
-    ],
-    subcategories : [
 
-    ]
-}
 
 module.exports = connectDatabase;
