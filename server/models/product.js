@@ -57,7 +57,7 @@ const ProductSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'Subcategory',
     default: null,
-    required: true
+    required: false
   },
   updated: Date,
   created: {
